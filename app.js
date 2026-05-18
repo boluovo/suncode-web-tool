@@ -235,22 +235,13 @@ async function downloadAi() {
   els.statusTitle.textContent = "正在生成 AI";
   els.statusDetail.textContent = "正在上传 SVG 到 Convertio 并等待转换完成。";
 
-  const endpoints = ["/api/convert-ai", "/.netlify/functions/convert-ai"];
-  let lastError;
-
-  for (const endpoint of endpoints) {
-    try {
-      const blob = await postAiConversion(endpoint);
-      downloadBlob(blob, `${outputBaseName()}.ai`);
-      els.statusTitle.textContent = "AI 已生成";
-      els.statusDetail.textContent = "转换完成，AI 文件已开始下载。";
-      return;
-    } catch (error) {
-      lastError = error;
-    }
-  }
-
-  throw lastError || new Error("AI 转换失败。");
+  const endpoint = location.hostname.includes("netlify.app")
+    ? "/.netlify/functions/convert-ai"
+    : "/api/convert-ai";
+  const blob = await postAiConversion(endpoint);
+  downloadBlob(blob, `${outputBaseName()}.ai`);
+  els.statusTitle.textContent = "AI 已生成";
+  els.statusDetail.textContent = "转换完成，AI 文件已开始下载。";
 }
 
 els.downloadJpeg.addEventListener("click", () => {
