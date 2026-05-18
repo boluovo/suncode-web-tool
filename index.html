@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SVG 太阳码导出工具</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="brand-mark">☀</span>
+          <div>
+            <h1>SVG 太阳码导出</h1>
+            <p>上传 SVG，自动叠加固定太阳码。</p>
+          </div>
+        </div>
+
+        <section class="panel">
+          <h2>文件</h2>
+          <label class="file-drop">
+            <input id="svgInput" type="file" accept=".svg,image/svg+xml" />
+            <span>选择 SVG 文件</span>
+            <small id="svgName">未选择</small>
+          </label>
+          <p class="note">太阳码已内置，导出时会等比缩放到 SVG 尺寸并作为最上层写入。</p>
+        </section>
+
+        <section class="panel">
+          <h2>导出</h2>
+          <div class="button-row">
+            <button id="downloadJpeg" type="button">下载 JPEG</button>
+            <button id="openConvertio" type="button">下载 AI</button>
+          </div>
+          <p class="note">下载 AI 会先生成处理后的 SVG，并打开在线转换页面完成 AI 转换。</p>
+        </section>
+      </aside>
+
+      <section class="workspace">
+        <div class="toolbar">
+          <div>
+            <strong id="statusTitle">等待文件</strong>
+            <span id="statusDetail">请先选择 SVG 文件。</span>
+          </div>
+        </div>
+        <div class="canvas-wrap">
+          <div id="preview" class="preview" aria-label="SVG 预览区域">
+            <div class="empty-state">SVG 预览会显示在这里</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
