@@ -18,7 +18,19 @@ function safeFilename(filename) {
   const base = String(filename || "artwork-suncode.svg")
     .replace(/[/\\?%*:|"<>]/g, "-")
     .replace(/\.svg$/i, "");
-  return `${base || "artwork-suncode"}.ai`;
+  const asciiBase = base
+    .normalize("NFKD")
+    .replace(/[^\x20-\x7E]/g, "")
+    .replace(/[^A-Za-z0-9._-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return `${asciiBase || "artwork-suncode"}.ai`;
+}
+
+function contentDisposition(filename) {
+  const fallback = safeFilename(filename);
+  const originalBase = String(filename || "artwork-suncode.svg").replace(/\.svg$/i, "");
+  const encoded = encodeURIComponent(`${originalBase || "artwork-suncode"}.ai`);
+  return `attachment; filename="${fallback}"; filename*=UTF-8''${encoded}`;
 }
 
 async function convertSvgToAi({ svg, filename }) {
@@ -85,7 +97,7 @@ module.exports = async function handler(request, response) {
 
     const aiBuffer = await convertSvgToAi({ svg, filename });
     response.setHeader("Content-Type", "application/octet-stream");
-    response.setHeader("Content-Disposition", `attachment; filename="${safeFilename(filename)}"`);
+    response.setHeader("Content-Disposition", contentDisposition(filename));
     response.status(200).send(aiBuffer);
   } catch (error) {
     response.status(500).send(error.message);
