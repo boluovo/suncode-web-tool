@@ -56,210 +56,44 @@ function decodeFixedSuncodeSvg() {
   return new TextDecoder("utf-8").decode(bytes);
 }
 
-function prefixEmbeddedSvg(svg) {
-  const prefix = "suncode-";
-  const idMap = new Map();
-  const classMap = new Map();
+function parseCssDeclarations(cssText) {
+  return Object.fromEntries(
+    cssText
+      .split(";")
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .map((item) => {
+        const [property, ...valueParts] = item.split(":");
+        return [property.trim(), valueParts.join(":").trim()];
+      }),
+  );
+}
 
-  svg.querySelectorAll("[id]").forEach((node) => {
-    const oldId = node.getAttribute("id");
-    const newId = `${prefix}${oldId}`;
-    idMap.set(oldId, newId);
-    node.setAttribute("id", newId);
+function collectClassStyles(svg) {
+  const styles = new Map();
+  svg.querySelectorAll("style").forEach((styleNode) => {
+    const css = styleNode.textContent;
+    for (const match of css.matchAll(/\.([A-Za-z0-9_-]+)\s*\{([^}]+)\}/g)) {
+      styles.set(match[1], parseCssDeclarations(match[2]));
+    }
   });
+  return styles;
+}
+
+function applyInlineStyles(svg) {
+  const classStyles = collectClassStyles(svg);
 
   svg.querySelectorAll("[class]").forEach((node) => {
-    const oldClasses = node.getAttribute("class").trim().split(/\s+/);
-    const newClasses = oldClasses.map((className) => {
-      const newClassName = `${prefix}${className}`;
-      classMap.set(className, newClassName);
-      return newClassName;
-    });
-    node.setAttribute("class", newClasses.join(" "));
-  });
-
-  svg.querySelectorAll("*").forEach((node) => {
-    [...node.attributes].forEach((attribute) => {
-      let value = attribute.value;
-      idMap.forEach((newId, oldId) => {
-        value = value
-          .replaceAll(`url(#${oldId})`, `url(#${newId})`)
-          .replaceAll(`#${oldId}`, `#${newId}`);
+    const classNames = node.getAttribute("class").trim().split(/\s+/);
+    classNames.forEach((className) => {
+      const declarations = classStyles.get(className);
+      if (!declarations) return;
+      Object.entries(declarations).forEach(([property, value]) => {
+        node.setAttribute(property, value);
       });
-      node.setAttribute(attribute.name, value);
     });
+    node.removeAttribute("class");
   });
 
-  svg.querySelectorAll("style").forEach((styleNode) => {
-    let css = styleNode.textContent;
-    classMap.forEach((newClassName, oldClassName) => {
-      css = css.replaceAll(`.${oldClassName}`, `.${newClassName}`);
-    });
-    idMap.forEach((newId, oldId) => {
-      css = css.replaceAll(`#${oldId}`, `#${newId}`);
-    });
-    styleNode.textContent = css;
-  });
+  svg.querySelectorAll("style").forEach((styleNode) => styleNode.remove());
 }
-
-function buildSuncodeLayer() {
-  const { x, y, width, height } = state.viewBox;
-  const doc = new DOMParser().parseFromString(decodeFixedSuncodeSvg(), "image/svg+xml");
-  const suncodeSvg = doc.documentElement;
-
-  prefixEmbeddedSvg(suncodeSvg);
-  suncodeSvg.setAttribute("id", "embedded-mini-program-suncode-artwork");
-  suncodeSvg.setAttribute("x", String(x));
-  suncodeSvg.setAttribute("y", String(y));
-  suncodeSvg.setAttribute("width", String(width));
-  suncodeSvg.setAttribute("height", String(height));
-  suncodeSvg.setAttribute("preserveAspectRatio", "xMidYMid meet");
-
-  const embeddedSvg = new XMLSerializer().serializeToString(suncodeSvg);
-
-  return `
-  <g id="mini-program-suncode" data-layer="top" pointer-events="none">
-    ${embeddedSvg}
-  </g>`;
-}
-
-function buildOutputSvg() {
-  if (!state.svgText) return "";
-
-  const cleaned = state.svgText.replace(/<g\s+id=["']mini-program-suncode["'][\s\S]*?<\/g>\s*/g, "");
-  const layer = buildSuncodeLayer();
-  if (!layer) return cleaned;
-  return cleaned.replace(/<\/svg>\s*$/i, `${layer}\n</svg>`);
-}
-
-function updateStatus() {
-  const hasSvg = Boolean(state.svgText);
-  els.downloadJpeg.disabled = !hasSvg;
-  els.openConvertio.disabled = !hasSvg;
-
-  if (!hasSvg) {
-    els.statusTitle.textContent = "等待文件";
-    els.statusDetail.textContent = "请先选择 SVG 文件。";
-    return;
-  }
-
-  els.statusTitle.textContent = "可导出";
-  els.statusDetail.textContent = "固定太阳码会等比缩放到 SVG 尺寸，并叠在最上层。";
-}
-
-function renderPreview() {
-  updateStatus();
-
-  if (!state.svgText) {
-    els.preview.innerHTML = '<div class="empty-state">SVG 预览会显示在这里</div>';
-    return;
-  }
-
-  els.preview.innerHTML = buildOutputSvg();
-}
-
-function downloadBlob(blob, filename) {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-}
-
-function outputBaseName() {
-  const name = state.svgName.replace(/\.svg$/i, "") || "artwork";
-  return `${name}-suncode`;
-}
-
-async function downloadJpeg() {
-  const svg = buildOutputSvg();
-  const svgBlob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
-  const url = URL.createObjectURL(svgBlob);
-  const image = new Image();
-
-  await new Promise((resolve, reject) => {
-    image.onload = resolve;
-    image.onerror = reject;
-    image.src = url;
-  });
-
-  const maxSide = 2000;
-  const scale = Math.min(maxSide / Math.max(image.width, image.height), 1) || 1;
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.max(1, Math.round(image.width * scale));
-  canvas.height = Math.max(1, Math.round(image.height * scale));
-
-  const ctx = canvas.getContext("2d");
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-
-  URL.revokeObjectURL(url);
-  canvas.toBlob((blob) => {
-    if (blob) downloadBlob(blob, `${outputBaseName()}.jpg`);
-  }, "image/jpeg", 0.92);
-}
-
-els.svgInput.addEventListener("change", async (event) => {
-  const file = event.target.files[0];
-  if (!file) return;
-  state.svgText = await readAsText(file);
-  state.svgName = file.name;
-  state.viewBox = parseViewBox(state.svgText);
-  els.svgName.textContent = file.name;
-  renderPreview();
-});
-
-async function postAiConversion(endpoint) {
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      filename: `${outputBaseName()}.svg`,
-      svg: buildOutputSvg(),
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error(await response.text());
-  }
-
-  return response.blob();
-}
-
-async function downloadAi() {
-  els.openConvertio.disabled = true;
-  els.statusTitle.textContent = "正在生成 AI";
-  els.statusDetail.textContent = "正在上传 SVG 到 Convertio 并等待转换完成。";
-
-  const endpoint = location.hostname.includes("netlify.app")
-    ? "/.netlify/functions/convert-ai"
-    : "/api/convert-ai";
-  const blob = await postAiConversion(endpoint);
-  downloadBlob(blob, `${outputBaseName()}.ai`);
-  els.statusTitle.textContent = "AI 已生成";
-  els.statusDetail.textContent = "转换完成，AI 文件已开始下载。";
-}
-
-els.downloadJpeg.addEventListener("click", () => {
-  downloadJpeg().catch(() => {
-    els.statusTitle.textContent = "JPEG 导出失败";
-    els.statusDetail.textContent = "请检查 SVG 是否包含跨域外链图片或浏览器不支持的内容。";
-  });
-});
-
-els.openConvertio.addEventListener("click", () => {
-  downloadAi()
-    .catch((error) => {
-      els.statusTitle.textContent = "AI 导出失败";
-      els.statusDetail.textContent = error.message || "请检查 Convertio API Key 和部署环境变量。";
-    })
-    .finally(() => {
-      els.openConvertio.disabled = !state.svgText;
-    });
-});
-
-updateStatus();
