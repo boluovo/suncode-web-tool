@@ -1,5 +1,7 @@
 # suncode-web-tool
 
-Static SVG sun-code overlay tool.
+Static SVG sun-code overlay tool with optional Convertio API conversion.
 
-Open `index.html` in a browser or deploy the folder as a static site.
+## Environment variables
+
+Set `CONVERTIO_API_KEY` in Vercel or Netlify before using AI export.

@@ -213,12 +213,44 @@ els.svgInput.addEventListener("change", async (event) => {
   renderPreview();
 });
 
-function openOnlineConverter(url) {
-  const blob = new Blob([buildOutputSvg()], { type: "image/svg+xml;charset=utf-8" });
-  downloadBlob(blob, `${outputBaseName()}.svg`);
-  window.open(url, "_blank", "noopener,noreferrer");
-  els.statusTitle.textContent = "已打开在线转换";
-  els.statusDetail.textContent = "请在新页面上传刚下载的 SVG 文件并转换为 AI。";
+async function postAiConversion(endpoint) {
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      filename: `${outputBaseName()}.svg`,
+      svg: buildOutputSvg(),
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(await response.text());
+  }
+
+  return response.blob();
+}
+
+async function downloadAi() {
+  els.openConvertio.disabled = true;
+  els.statusTitle.textContent = "正在生成 AI";
+  els.statusDetail.textContent = "正在上传 SVG 到 Convertio 并等待转换完成。";
+
+  const endpoints = ["/api/convert-ai", "/.netlify/functions/convert-ai"];
+  let lastError;
+
+  for (const endpoint of endpoints) {
+    try {
+      const blob = await postAiConversion(endpoint);
+      downloadBlob(blob, `${outputBaseName()}.ai`);
+      els.statusTitle.textContent = "AI 已生成";
+      els.statusDetail.textContent = "转换完成，AI 文件已开始下载。";
+      return;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError || new Error("AI 转换失败。");
 }
 
 els.downloadJpeg.addEventListener("click", () => {
@@ -229,7 +261,14 @@ els.downloadJpeg.addEventListener("click", () => {
 });
 
 els.openConvertio.addEventListener("click", () => {
-  openOnlineConverter("https://convertio.co/zh/svg-ai/");
+  downloadAi()
+    .catch((error) => {
+      els.statusTitle.textContent = "AI 导出失败";
+      els.statusDetail.textContent = error.message || "请检查 Convertio API Key 和部署环境变量。";
+    })
+    .finally(() => {
+      els.openConvertio.disabled = !state.svgText;
+    });
 });
 
 updateStatus();
