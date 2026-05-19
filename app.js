@@ -53,7 +53,7 @@ const FIXED_SUNCODE_BASE64 =
 const state = {
   svgText: "",
   svgName: "",
-  suncodeDataUrl: `data:image/svg+xml;base64,${FIXED_SUNCODE_BASE64}`,
+  suncodeSvgText: "",
   viewBox: { x: 0, y: 0, width: 1000, height: 1000 },
 };
 
@@ -111,17 +111,63 @@ function escapeXml(value) {
     .replace(/"/g, "&quot;");
 }
 
+function decodeBase64Utf8(base64) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+  return new TextDecoder("utf-8").decode(bytes);
+}
+
+function encodeBase64Utf8(value) {
+  const bytes = new TextEncoder().encode(value);
+  let binary = "";
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return btoa(binary);
+}
+
+function namespaceSvgFragment(svgText, prefix) {
+  let namespaced = svgText
+    .replace(/<\?xml[\s\S]*?\?>/gi, "")
+    .replace(/<!--[\s\S]*?-->/g, "");
+
+  namespaced = namespaced
+    .replace(/\bid=(["'])([^"']+)\1/g, (_match, quote, id) => `id=${quote}${prefix}-${id}${quote}`)
+    .replace(/url\(#([^)]+)\)/g, (_match, id) => `url(#${prefix}-${id})`)
+    .replace(/\b(xlink:href|href)=(["'])#([^"']+)\2/g, (_match, attr, quote, id) => `${attr}=${quote}#${prefix}-${id}${quote}`)
+    .replace(/\.([A-Za-z_][\w-]*)/g, `.${prefix}-$1`)
+    .replace(/\bclass=(["'])([^"']+)\1/g, (_match, quote, classNames) => {
+      const renamed = classNames
+        .trim()
+        .split(/\s+/)
+        .map((className) => `${prefix}-${className}`)
+        .join(" ");
+      return `class=${quote}${renamed}${quote}`;
+    });
+
+  const doc = new DOMParser().parseFromString(namespaced, "image/svg+xml");
+  const svg = doc.documentElement;
+  const viewBox = svg.getAttribute("viewBox") || "0 0 636 636";
+  return { viewBox, content: svg.innerHTML };
+}
+
 function buildSuncodeLayer() {
   const { x, y, width, height } = state.viewBox;
+  const suncode = namespaceSvgFragment(state.suncodeSvgText, "suncode");
 
   return `
   <g id="mini-program-suncode" data-layer="top" pointer-events="none">
-    <image x="${x}" y="${y}" width="${width}" height="${height}" href="${escapeXml(state.suncodeDataUrl)}" preserveAspectRatio="xMidYMid meet"/>
+    <svg x="${x}" y="${y}" width="${width}" height="${height}" viewBox="${escapeXml(suncode.viewBox)}" preserveAspectRatio="xMidYMid meet" overflow="visible">
+      ${suncode.content}
+    </svg>
   </g>`;
 }
 
 function buildOutputSvg() {
-  if (!state.svgText || !state.suncodeDataUrl) return "";
+  if (!state.svgText || !state.suncodeSvgText) return "";
 
   const cleaned = state.svgText.replace(/<g\s+id=["']mini-program-suncode["'][\s\S]*?<\/g>\s*/g, "");
   return cleaned.replace(/<\/svg>\s*$/i, `${buildSuncodeLayer()}\n</svg>`);
@@ -197,64 +243,32 @@ async function downloadJpeg() {
   }, "image/jpeg", 0.92);
 }
 
-function canvasToRgbHex(canvas) {
-  const ctx = canvas.getContext("2d", { willReadFrequently: true });
-  const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const hex = [];
-  let line = "";
+async function postAiConversion(endpoint) {
+  const svg = buildOutputSvg();
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      filename: `${outputBaseName()}.svg`,
+      fileBase64: encodeBase64Utf8(svg),
+    }),
+  });
 
-  for (let index = 0; index < data.length; index += 4) {
-    line +=
-      data[index].toString(16).padStart(2, "0") +
-      data[index + 1].toString(16).padStart(2, "0") +
-      data[index + 2].toString(16).padStart(2, "0");
-
-    if (line.length >= 96) {
-      hex.push(line);
-      line = "";
-    }
+  if (!response.ok) {
+    throw new Error(await response.text());
   }
 
-  if (line) hex.push(line);
-  return hex.join("\n");
-}
-
-function buildAiFileFromCanvas(canvas) {
-  const width = canvas.width;
-  const height = canvas.height;
-  const imageHex = canvasToRgbHex(canvas);
-
-  return `%!PS-Adobe-3.0 EPSF-3.0
-%%Creator: SVG Suncode Export Tool
-%%Title: ${outputBaseName()}.ai
-%%BoundingBox: 0 0 ${width} ${height}
-%%HiResBoundingBox: 0 0 ${width} ${height}
-%%LanguageLevel: 2
-%%Pages: 1
-%%DocumentProcessColors: Cyan Magenta Yellow Black
-%%EndComments
-%%Page: 1 1
-gsave
-/DeviceRGB setcolorspace
-0 ${height} translate
-${width} -${height} scale
-${width} ${height} 8
-[${width} 0 0 -${height} 0 ${height}]
-{ currentfile ${width * 3} string readhexstring pop } false 3 colorimage
-${imageHex}
-grestore
-showpage
-%%EOF
-`;
+  return response.blob();
 }
 
 async function downloadAi() {
   els.openConvertio.disabled = true;
-  setStatus("正在生成 AI", "正在生成 Illustrator 可打开的白底 RGB 文件。");
+  setStatus("正在生成 AI", "正在把完整矢量 SVG 转成 AI 文件。");
 
-  const canvas = await renderOutputToCanvas(1600);
-  const aiText = buildAiFileFromCanvas(canvas);
-  const blob = new Blob([aiText], { type: "application/postscript" });
+  const endpoint = location.hostname.includes("netlify.app")
+    ? "/.netlify/functions/convert-ai"
+    : "/api/convert-ai";
+  const blob = await postAiConversion(endpoint);
   downloadBlob(blob, `${outputBaseName()}.ai`);
   setStatus("AI 已生成", "转换完成，AI 文件已开始下载。");
 }
@@ -292,4 +306,5 @@ els.openConvertio.addEventListener("click", () => {
 });
 
 setButtonsEnabled(false);
+state.suncodeSvgText = decodeBase64Utf8(FIXED_SUNCODE_BASE64);
 renderPreview();
