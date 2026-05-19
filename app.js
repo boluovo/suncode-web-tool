@@ -197,42 +197,64 @@ async function downloadJpeg() {
   }, "image/jpeg", 0.92);
 }
 
-async function rasterizeForAiUpload() {
-  const canvas = await renderOutputToCanvas(2048);
-  const jpegDataUrl = canvas.toDataURL("image/jpeg", 0.96);
+function canvasToRgbHex(canvas) {
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const hex = [];
+  let line = "";
 
-  return {
-    fileBase64: jpegDataUrl.split(",")[1],
-    filename: `${outputBaseName()}.jpg`,
-  };
-}
+  for (let index = 0; index < data.length; index += 4) {
+    line +=
+      data[index].toString(16).padStart(2, "0") +
+      data[index + 1].toString(16).padStart(2, "0") +
+      data[index + 2].toString(16).padStart(2, "0");
 
-async function postAiConversion(endpoint) {
-  const aiInput = await rasterizeForAiUpload();
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      filename: aiInput.filename,
-      fileBase64: aiInput.fileBase64,
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error(await response.text());
+    if (line.length >= 96) {
+      hex.push(line);
+      line = "";
+    }
   }
 
-  return response.blob();
+  if (line) hex.push(line);
+  return hex.join("\n");
+}
+
+function buildAiFileFromCanvas(canvas) {
+  const width = canvas.width;
+  const height = canvas.height;
+  const imageHex = canvasToRgbHex(canvas);
+
+  return `%!PS-Adobe-3.0 EPSF-3.0
+%%Creator: SVG Suncode Export Tool
+%%Title: ${outputBaseName()}.ai
+%%BoundingBox: 0 0 ${width} ${height}
+%%HiResBoundingBox: 0 0 ${width} ${height}
+%%LanguageLevel: 2
+%%Pages: 1
+%%DocumentProcessColors: Cyan Magenta Yellow Black
+%%EndComments
+%%Page: 1 1
+gsave
+/DeviceRGB setcolorspace
+0 ${height} translate
+${width} -${height} scale
+${width} ${height} 8
+[${width} 0 0 -${height} 0 ${height}]
+{ currentfile ${width * 3} string readhexstring pop } false 3 colorimage
+${imageHex}
+grestore
+showpage
+%%EOF
+`;
 }
 
 async function downloadAi() {
   els.openConvertio.disabled = true;
-  setStatus("正在生成 AI", "正在上传白底 JPEG 到 Convertio 并等待转换完成。");
+  setStatus("正在生成 AI", "正在生成 Illustrator 可打开的白底 RGB 文件。");
 
-  const endpoint = location.hostname.includes("netlify.app")
-    ? "/.netlify/functions/convert-ai"
-    : "/api/convert-ai";
-  const blob = await postAiConversion(endpoint);
+  const canvas = await renderOutputToCanvas(1600);
+  const aiText = buildAiFileFromCanvas(canvas);
+  const blob = new Blob([aiText], { type: "application/postscript" });
   downloadBlob(blob, `${outputBaseName()}.ai`);
   setStatus("AI 已生成", "转换完成，AI 文件已开始下载。");
 }
@@ -262,7 +284,7 @@ els.downloadJpeg.addEventListener("click", () => {
 els.openConvertio.addEventListener("click", () => {
   downloadAi()
     .catch((error) => {
-      setStatus("AI 导出失败", error.message || "请检查 Convertio API Key 和部署环境变量。");
+      setStatus("AI 导出失败", error.message || "请检查 SVG 文件内容。");
     })
     .finally(() => {
       els.openConvertio.disabled = !state.svgText;
