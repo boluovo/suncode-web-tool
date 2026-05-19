@@ -199,11 +199,11 @@ async function downloadJpeg() {
 
 async function rasterizeForAiUpload() {
   const canvas = await renderOutputToCanvas(2048);
-  const pngDataUrl = canvas.toDataURL("image/png");
+  const jpegDataUrl = canvas.toDataURL("image/jpeg", 0.96);
 
   return {
-    fileBase64: pngDataUrl.split(",")[1],
-    filename: `${outputBaseName()}.png`,
+    fileBase64: jpegDataUrl.split(",")[1],
+    filename: `${outputBaseName()}.jpg`,
   };
 }
 
@@ -227,7 +227,7 @@ async function postAiConversion(endpoint) {
 
 async function downloadAi() {
   els.openConvertio.disabled = true;
-  setStatus("正在生成 AI", "正在上传 PNG 到 Convertio 并等待转换完成。");
+  setStatus("正在生成 AI", "正在上传白底 JPEG 到 Convertio 并等待转换完成。");
 
   const endpoint = location.hostname.includes("netlify.app")
     ? "/.netlify/functions/convert-ai"
