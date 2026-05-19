@@ -129,8 +129,52 @@ function encodeBase64Utf8(value) {
   return btoa(binary);
 }
 
+function parseClassStyles(svgText) {
+  const styles = new Map();
+  const styleBlocks = svgText.match(/<style[\s\S]*?<\/style>/gi) || [];
+
+  styleBlocks.forEach((block) => {
+    const css = block.replace(/<style[^>]*>/i, "").replace(/<\/style>/i, "");
+    const rulePattern = /\.([A-Za-z_][\w-]*)\s*\{([^}]+)\}/g;
+    let rule;
+
+    while ((rule = rulePattern.exec(css))) {
+      styles.set(rule[1], rule[2].trim().replace(/\s+/g, " "));
+    }
+  });
+
+  return styles;
+}
+
+function inlineClassStyles(svgText) {
+  const classStyles = parseClassStyles(svgText);
+  const withoutStyleBlocks = svgText.replace(/<style[\s\S]*?<\/style>/gi, "");
+
+  return withoutStyleBlocks.replace(/<([A-Za-z][\w:-]*)([^>]*)\sclass=(["'])([^"']+)\3([^>]*)>/g, (match, tag, before, _quote, classNames, after) => {
+    const inlineStyles = classNames
+      .trim()
+      .split(/\s+/)
+      .map((className) => classStyles.get(className))
+      .filter(Boolean)
+      .join(" ");
+
+    const rawAttrs = `${before}${after}`;
+    const selfClosing = /\/\s*$/.test(rawAttrs);
+    const attrs = rawAttrs.replace(/\/\s*$/, "");
+    const mergedAttrs = attrs.replace(/\sstyle=(["'])([^"']*)\1/, (_styleMatch, quote, existingStyle) => {
+      return ` style=${quote}${existingStyle.trim()} ${inlineStyles}${quote}`;
+    });
+
+    if (/\sstyle=/.test(mergedAttrs)) {
+      return `<${tag}${mergedAttrs}${selfClosing ? "/" : ""}>`;
+    }
+
+    return `<${tag}${mergedAttrs} style="${inlineStyles}"${selfClosing ? "/" : ""}>`;
+  });
+}
+
 function namespaceSvgFragment(svgText, prefix) {
-  let namespaced = svgText
+  let namespaced = inlineClassStyles(svgText)
     .replace(/<\?xml[\s\S]*?\?>/gi, "")
     .replace(/<!--[\s\S]*?-->/g, "");
 
@@ -138,15 +182,7 @@ function namespaceSvgFragment(svgText, prefix) {
     .replace(/\bid=(["'])([^"']+)\1/g, (_match, quote, id) => `id=${quote}${prefix}-${id}${quote}`)
     .replace(/url\(#([^)]+)\)/g, (_match, id) => `url(#${prefix}-${id})`)
     .replace(/\b(xlink:href|href)=(["'])#([^"']+)\2/g, (_match, attr, quote, id) => `${attr}=${quote}#${prefix}-${id}${quote}`)
-    .replace(/\.([A-Za-z_][\w-]*)/g, `.${prefix}-$1`)
-    .replace(/\bclass=(["'])([^"']+)\1/g, (_match, quote, classNames) => {
-      const renamed = classNames
-        .trim()
-        .split(/\s+/)
-        .map((className) => `${prefix}-${className}`)
-        .join(" ");
-      return `class=${quote}${renamed}${quote}`;
-    });
+    .replace(/\.([A-Za-z_][\w-]*)/g, `.${prefix}-$1`);
 
   const doc = new DOMParser().parseFromString(namespaced, "image/svg+xml");
   const svg = doc.documentElement;
