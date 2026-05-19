@@ -178,7 +178,12 @@ function inlineClassStyles(svgText) {
 function namespaceSvgFragment(svgText, prefix) {
   let namespaced = inlineClassStyles(svgText)
     .replace(/<\?xml[\s\S]*?\?>/gi, "")
-    .replace(/<!--[\s\S]*?-->/g, "");
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .replace(/<defs[\s\S]*?<\/defs>/gi, "")
+    .replace(/<clipPath[\s\S]*?<\/clipPath>/gi, "")
+    .replace(/<path[^>]*d=(["'])M318,244\.7[\s\S]*?<\/path>/gi, "")
+    .replace(/<path[^>]*d=(["'])M318,244\.7[^"']*\1[^>]*\/>/gi, "")
+    .replace(/\sstyle=(["'])clip-path:url\([^)]+\);?\1/g, "");
 
   namespaced = namespaced
     .replace(/\bid=(["'])([^"']+)\1/g, (_match, quote, id) => `id=${quote}${prefix}-${id}${quote}`)
