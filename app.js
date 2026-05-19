@@ -192,7 +192,7 @@ function namespaceSvgFragment(svgText, prefix) {
   return { viewBox, content: svg.innerHTML };
 }
 
-function buildSuncodeLayer() {
+function buildSuncodePreviewLayer() {
   const { x, y, width, height } = state.viewBox;
 
   return `
@@ -201,11 +201,24 @@ function buildSuncodeLayer() {
   </g>`;
 }
 
-function buildOutputSvg() {
-  if (!state.svgText || !state.suncodeDataUrl) return "";
+function buildSuncodeExportLayer() {
+  const { x, y, width, height } = state.viewBox;
+  const suncode = namespaceSvgFragment(state.suncodeSvgText, "suncode");
+
+  return `
+  <g id="mini-program-suncode" data-layer="top" pointer-events="none">
+    <svg x="${x}" y="${y}" width="${width}" height="${height}" viewBox="${escapeXml(suncode.viewBox)}" preserveAspectRatio="xMidYMid meet" overflow="visible">
+      ${suncode.content}
+    </svg>
+  </g>`;
+}
+
+function buildOutputSvg(mode = "preview") {
+  if (!state.svgText || !state.suncodeDataUrl || !state.suncodeSvgText) return "";
 
   const cleaned = state.svgText.replace(/<g\s+id=["']mini-program-suncode["'][\s\S]*?<\/g>\s*/g, "");
-  return cleaned.replace(/<\/svg>\s*$/i, `${buildSuncodeLayer()}\n</svg>`);
+  const suncodeLayer = mode === "export" ? buildSuncodeExportLayer() : buildSuncodePreviewLayer();
+  return cleaned.replace(/<\/svg>\s*$/i, `${suncodeLayer}\n</svg>`);
 }
 
 function renderPreview() {
@@ -279,7 +292,7 @@ async function downloadJpeg() {
 }
 
 async function postAiConversion(endpoint) {
-  const svg = buildOutputSvg();
+  const svg = buildOutputSvg("export");
   const response = await fetch(endpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
