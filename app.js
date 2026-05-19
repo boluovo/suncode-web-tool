@@ -241,6 +241,37 @@ async function downloadJpeg() {
   }, "image/jpeg", 0.92);
 }
 
+async function rasterizeSvgForAi() {
+  const svg = buildOutputSvg();
+  const svgBlob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
+  const url = URL.createObjectURL(svgBlob);
+  const image = new Image();
+
+  await new Promise((resolve, reject) => {
+    image.onload = resolve;
+    image.onerror = reject;
+    image.src = url;
+  });
+
+  const maxSide = 4096;
+  const scale = Math.min(maxSide / Math.max(image.width, image.height), 1) || 1;
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(image.width * scale));
+  canvas.height = Math.max(1, Math.round(image.height * scale));
+
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+  URL.revokeObjectURL(url);
+
+  const pngDataUrl = canvas.toDataURL("image/png");
+  const { x, y, width, height } = state.viewBox;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${x} ${y} ${width} ${height}" width="${width}" height="${height}">
+  <image x="${x}" y="${y}" width="${width}" height="${height}" href="${pngDataUrl}" preserveAspectRatio="xMidYMid meet"/>
+</svg>`;
+}
+
 els.svgInput.addEventListener("change", async (event) => {
   const file = event.target.files[0];
   if (!file) return;
@@ -257,7 +288,7 @@ async function postAiConversion(endpoint) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       filename: `${outputBaseName()}.svg`,
-      svg: buildOutputSvg(),
+      svg: await rasterizeSvgForAi(),
     }),
   });
 
