@@ -6,18 +6,14 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function toBase64(value) {
-  return Buffer.from(value, "utf8").toString("base64");
-}
-
 function fromBase64(value) {
   return Buffer.from(value, "base64");
 }
 
 function safeFilename(filename) {
-  const base = String(filename || "artwork-suncode.svg")
+  const base = String(filename || "artwork-suncode.png")
     .replace(/[/\\?%*:|"<>]/g, "-")
-    .replace(/\.svg$/i, "");
+    .replace(/\.[^.]+$/i, "");
   const asciiBase = base
     .normalize("NFKD")
     .replace(/[^\x20-\x7E]/g, "")
@@ -28,12 +24,12 @@ function safeFilename(filename) {
 
 function contentDisposition(filename) {
   const fallback = safeFilename(filename);
-  const originalBase = String(filename || "artwork-suncode.svg").replace(/\.svg$/i, "");
+  const originalBase = String(filename || "artwork-suncode.png").replace(/\.[^.]+$/i, "");
   const encoded = encodeURIComponent(`${originalBase || "artwork-suncode"}.ai`);
   return `attachment; filename="${fallback}"; filename*=UTF-8''${encoded}`;
 }
 
-async function convertSvgToAi({ svg, filename }) {
+async function convertToAi({ fileBase64, filename }) {
   const apiKey = process.env.CONVERTIO_API_KEY;
   if (!apiKey) {
     throw new Error("缺少 CONVERTIO_API_KEY 环境变量。");
@@ -45,8 +41,8 @@ async function convertSvgToAi({ svg, filename }) {
     body: JSON.stringify({
       apikey: apiKey,
       input: "base64",
-      file: toBase64(svg),
-      filename: filename || "artwork-suncode.svg",
+      file: fileBase64,
+      filename: filename || "artwork-suncode.png",
       outputformat: "ai",
     }),
   });
@@ -89,13 +85,13 @@ module.exports = async function handler(request, response) {
   }
 
   try {
-    const { svg, filename } = request.body || {};
-    if (!svg || typeof svg !== "string") {
-      response.status(400).send("缺少 SVG 内容。");
+    const { fileBase64, filename } = request.body || {};
+    if (!fileBase64 || typeof fileBase64 !== "string") {
+      response.status(400).send("缺少待转换文件内容。");
       return;
     }
 
-    const aiBuffer = await convertSvgToAi({ svg, filename });
+    const aiBuffer = await convertToAi({ fileBase64, filename });
     response.setHeader("Content-Type", "application/octet-stream");
     response.setHeader("Content-Disposition", contentDisposition(filename));
     response.status(200).send(aiBuffer);
