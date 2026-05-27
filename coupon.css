@@ -1,0 +1,285 @@
+:root {
+  color-scheme: light;
+  --bg: #f3f4f6;
+  --panel: #ffffff;
+  --ink: #191919;
+  --muted: #70757d;
+  --line: #dfe5ea;
+  --yellow: #ffce00;
+  --yellow-dark: #f4bd00;
+  --accent: #111827;
+}
+
+@font-face {
+  font-family: "MotoyaCedarW6";
+  src: url("./assets/fonts/MotoyaCedarStd-W6.otf") format("opentype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "HYFengShangHei85J";
+  src: url("./assets/fonts/HYFengShangHei_85J.ttf") format("truetype");
+  font-display: swap;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.coupon-app {
+  display: grid;
+  grid-template-columns: minmax(300px, 380px) 1fr;
+  min-height: 100vh;
+}
+
+.coupon-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+}
+
+.coupon-brand {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding-bottom: 10px;
+}
+
+.coupon-mark {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 8px;
+  color: #191919;
+  background: var(--yellow);
+  font-weight: 800;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+h2 {
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.coupon-brand p,
+.coupon-toolbar span,
+.template-card small,
+.field span {
+  color: var(--muted);
+}
+
+.coupon-brand p {
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.coupon-panel {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfd;
+}
+
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.template-card {
+  display: flex;
+  min-height: 72px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+}
+
+.template-card span {
+  overflow-wrap: anywhere;
+  font-weight: 750;
+}
+
+.template-card small {
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+
+.template-card.active {
+  border-color: var(--yellow-dark);
+  background: #fff8d8;
+}
+
+.field {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.field:first-of-type {
+  margin-top: 0;
+}
+
+.field span {
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  border: 1px solid #cfd8df;
+  border-radius: 8px;
+  color: var(--ink);
+  background: #fff;
+  outline: none;
+}
+
+.field input {
+  min-height: 42px;
+  padding: 0 12px;
+}
+
+.field textarea {
+  min-height: 84px;
+  padding: 10px 12px;
+  resize: vertical;
+}
+
+.field input:focus,
+.field textarea:focus {
+  border-color: var(--yellow-dark);
+  box-shadow: 0 0 0 3px rgba(255, 206, 0, 0.18);
+}
+
+.action-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.action-row button {
+  min-height: 42px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  color: #fff;
+  background: var(--accent);
+  cursor: pointer;
+  font-weight: 750;
+}
+
+.action-row button:hover {
+  background: #000;
+}
+
+.coupon-workspace {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-width: 0;
+}
+
+.coupon-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.coupon-stage {
+  display: grid;
+  min-height: 0;
+  padding: 28px;
+  place-items: center;
+}
+
+.coupon-preview {
+  display: grid;
+  width: min(82vw, 620px);
+  aspect-ratio: 1;
+  place-items: center;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background:
+    linear-gradient(45deg, #e8edf1 25%, transparent 25%),
+    linear-gradient(-45deg, #e8edf1 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #e8edf1 75%),
+    linear-gradient(-45deg, transparent 75%, #e8edf1 75%);
+  background-position:
+    0 0,
+    0 10px,
+    10px -10px,
+    -10px 0;
+  background-size: 20px 20px;
+}
+
+.coupon-preview svg {
+  display: block;
+  width: min(100%, 520px);
+  height: auto;
+  filter: drop-shadow(0 18px 40px rgba(25, 25, 25, 0.14));
+}
+
+@media (max-width: 820px) {
+  .coupon-app {
+    grid-template-columns: 1fr;
+  }
+
+  .coupon-sidebar {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .coupon-stage {
+    padding: 14px;
+  }
+
+  .coupon-preview {
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .template-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,235 @@
+:root {
+  --admin-sidebar: #101820;
+  --admin-sidebar-2: #16222d;
+  --admin-text: #eef3f7;
+  --admin-muted: #95a3af;
+}
+
+body {
+  background: #f3f5f7;
+}
+
+.admin-app {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: 100vh;
+}
+
+.admin-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 22px 18px;
+  color: var(--admin-text);
+  background: linear-gradient(180deg, var(--admin-sidebar), var(--admin-sidebar-2));
+}
+
+.admin-brand {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 4px 4px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.admin-mark {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 8px;
+  color: #161616;
+  background: #ffce00;
+  font-weight: 900;
+}
+
+.admin-brand h1 {
+  color: var(--admin-text);
+  font-size: 20px;
+}
+
+.admin-brand p {
+  margin-top: 4px;
+  color: var(--admin-muted);
+  font-size: 13px;
+}
+
+.admin-nav {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-nav-item {
+  display: flex;
+  min-height: 72px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 5px;
+  padding: 13px 14px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--admin-text);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.admin-nav-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.admin-nav-item.active {
+  border-color: rgba(255, 206, 0, 0.48);
+  background: rgba(255, 206, 0, 0.16);
+}
+
+.admin-nav-item span {
+  font-size: 15px;
+  font-weight: 750;
+}
+
+.admin-nav-item small {
+  color: var(--admin-muted);
+  font-size: 12px;
+}
+
+.admin-main {
+  min-width: 0;
+  overflow: auto;
+}
+
+.admin-page {
+  display: none;
+  min-height: 100vh;
+}
+
+.admin-page.active {
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.admin-header {
+  display: flex;
+  min-height: 78px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.admin-header div {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-header strong {
+  font-size: 20px;
+}
+
+.admin-header span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.admin-tool-grid {
+  display: grid;
+  min-height: 0;
+}
+
+.coupon-admin-grid,
+.suncode-admin-grid {
+  grid-template-columns: 340px 1fr;
+}
+
+.coupon-sidebar.embedded,
+.sidebar.embedded {
+  min-height: 0;
+  border-right: 1px solid var(--line);
+  background: #fff;
+}
+
+.coupon-sidebar.embedded {
+  gap: 16px;
+  padding: 20px;
+}
+
+.coupon-workspace.embedded,
+.workspace.embedded {
+  min-height: 0;
+  background: #f3f5f7;
+}
+
+.coupon-workspace.embedded {
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.coupon-toolbar,
+.toolbar {
+  min-height: 60px;
+}
+
+.coupon-stage,
+.canvas-wrap {
+  min-height: calc(100vh - 138px);
+}
+
+.coupon-preview {
+  width: min(100%, 760px);
+  height: min(72vh, 760px);
+  aspect-ratio: auto;
+}
+
+.coupon-preview svg {
+  width: min(100%, 560px);
+}
+
+.preview {
+  width: min(100%, 980px);
+}
+
+@media (max-width: 980px) {
+  .admin-app {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .admin-brand {
+    padding-bottom: 12px;
+  }
+
+  .admin-nav {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .coupon-admin-grid,
+  .suncode-admin-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .coupon-sidebar.embedded,
+  .sidebar.embedded {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .coupon-stage,
+  .canvas-wrap {
+    min-height: 58vh;
+  }
+}
+
+@media (max-width: 560px) {
+  .admin-nav {
+    grid-template-columns: 1fr;
+  }
+}

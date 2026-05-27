@@ -3,55 +3,147 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SVG 太阳码导出工具</title>
+    <title>抽卡机工具</title>
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./coupon.css" />
+    <link rel="stylesheet" href="./dashboard.css" />
   </head>
   <body>
-    <main class="app">
-      <aside class="sidebar">
-        <div class="brand">
-          <span class="brand-mark">☀</span>
+    <main class="admin-app">
+      <aside class="admin-sidebar">
+        <div class="admin-brand">
+          <span class="admin-mark">卡</span>
           <div>
-            <h1>SVG 太阳码导出</h1>
-            <p>上传 SVG，自动叠加固定太阳码。</p>
+            <h1>抽卡机工具</h1>
+            <p>tools</p>
           </div>
         </div>
 
-        <section class="panel">
-          <h2>文件</h2>
-          <label class="file-drop">
-            <input id="svgInput" type="file" accept=".svg,image/svg+xml" />
-            <span>选择 SVG 文件</span>
-            <small id="svgName">未选择</small>
-          </label>
-          <p class="note">太阳码已内置，导出时会等比缩放到 SVG 尺寸并作为最上层写入。</p>
-        </section>
-
-        <section class="panel">
-          <h2>导出</h2>
-          <div class="button-row">
-            <button id="downloadJpeg" type="button" disabled>下载 JPEG</button>
-            <button id="openConvertio" type="button" disabled>下载 AI</button>
-          </div>
-          <p class="note">下载 AI 会把完整矢量 SVG 交给后端转换，太阳码会作为矢量内容写入。</p>
-        </section>
+        <nav class="admin-nav" aria-label="工具菜单">
+          <button class="admin-nav-item active" type="button" data-page="coupon">
+            <span>优惠券编辑器</span>
+            <small>三种模板，三行文字</small>
+          </button>
+          <button class="admin-nav-item" type="button" data-page="suncode">
+            <span>部落太阳码</span>
+            <small>SVG 叠加与导出</small>
+          </button>
+        </nav>
       </aside>
 
-      <section class="workspace">
-        <div class="toolbar">
-          <div>
-            <strong id="statusTitle">等待文件</strong>
-            <span id="statusDetail">请先选择 SVG 文件。</span>
+      <section class="admin-main">
+        <section id="couponPage" class="admin-page active" data-page-panel="coupon">
+          <div class="admin-header">
+            <div>
+              <strong>优惠券编辑器</strong>
+              <span>选择模板后，编辑三行文字并导出图片。</span>
+            </div>
           </div>
-        </div>
-        <div class="canvas-wrap">
-          <div id="preview" class="preview" aria-label="SVG 预览区域">
-            <div class="empty-state">SVG 预览会显示在这里</div>
+
+          <div class="admin-tool-grid coupon-admin-grid">
+            <aside class="coupon-sidebar embedded">
+              <section class="coupon-panel">
+                <h2>模板</h2>
+                <div class="template-grid" role="radiogroup" aria-label="选择优惠券模板">
+                  <button class="template-card active" type="button" data-template="cash">
+                    <span>折扣券</span>
+                  </button>
+                  <button class="template-card" type="button" data-template="free">
+                    <span>免费券</span>
+                  </button>
+                  <button class="template-card" type="button" data-template="box">
+                    <span>买赠券</span>
+                  </button>
+                </div>
+              </section>
+
+              <section class="coupon-panel">
+                <h2>文字</h2>
+                <label class="field">
+                  <span>第一行</span>
+                  <input id="line1" type="text" />
+                </label>
+                <label class="field">
+                  <span>第二行</span>
+                  <input id="line2" type="text" />
+                </label>
+                <label class="field">
+                  <span>第三行</span>
+                  <textarea id="line3" rows="3"></textarea>
+                </label>
+              </section>
+
+              <section class="coupon-panel">
+                <h2>导出</h2>
+                <div class="action-row">
+                  <button id="downloadPng" type="button">下载 PNG</button>
+                </div>
+              </section>
+            </aside>
+
+            <section class="coupon-workspace embedded">
+              <div class="coupon-toolbar">
+                <strong id="templateTitle">折扣券</strong>
+                <span>实时预览</span>
+              </div>
+              <div class="coupon-stage">
+                <div id="couponPreview" class="coupon-preview" aria-label="优惠券预览"></div>
+              </div>
+            </section>
           </div>
-        </div>
+        </section>
+
+        <section id="suncodePage" class="admin-page" data-page-panel="suncode">
+          <div class="admin-header">
+            <div>
+              <strong>部落太阳码</strong>
+              <span>上传 SVG，自动叠加固定太阳码并导出。</span>
+            </div>
+          </div>
+
+          <div class="admin-tool-grid suncode-admin-grid">
+            <aside class="sidebar embedded">
+              <section class="panel">
+                <h2>文件</h2>
+                <label class="file-drop">
+                  <input id="svgInput" type="file" accept=".svg,image/svg+xml" />
+                  <span>选择 SVG 文件</span>
+                  <small id="svgName">未选择</small>
+                </label>
+                <p class="note">太阳码已内置，导出时会等比缩放到 SVG 尺寸并作为最上层写入。</p>
+              </section>
+
+              <section class="panel">
+                <h2>导出</h2>
+                <div class="button-row">
+                  <button id="downloadJpeg" type="button" disabled>下载 JPEG</button>
+                  <button id="openConvertio" type="button" disabled>下载 AI</button>
+                </div>
+                <p class="note">下载 AI 会把完整矢量 SVG 交给后端转换，太阳码会作为矢量内容写入。</p>
+              </section>
+            </aside>
+
+            <section class="workspace embedded">
+              <div class="toolbar">
+                <div>
+                  <strong id="statusTitle">等待文件</strong>
+                  <span id="statusDetail">请先选择 SVG 文件。</span>
+                </div>
+              </div>
+              <div class="canvas-wrap">
+                <div id="preview" class="preview" aria-label="SVG 预览区域">
+                  <div class="empty-state">SVG 预览会显示在这里</div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </section>
       </section>
     </main>
 
+    <script src="./coupon-fonts.js"></script>
+    <script src="./coupon.js"></script>
     <script src="./app.js"></script>
+    <script src="./dashboard.js"></script>
   </body>
 </html>

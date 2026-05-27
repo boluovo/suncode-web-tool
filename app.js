@@ -1,3 +1,4 @@
+(() => {
 const FIXED_SUNCODE_BASE64 =
   "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDI1" +
   "LjAuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPgo8c3ZnIHZlcnNpb249IjEu" +
@@ -318,9 +319,11 @@ async function downloadAi() {
   els.openConvertio.disabled = true;
   setStatus("正在生成 AI", "正在把完整矢量 SVG 转成 AI 文件。");
 
-  const endpoint = location.hostname.includes("netlify.app")
-    ? "/.netlify/functions/convert-ai"
-    : "/api/convert-ai";
+  const endpoint = location.protocol === "file:"
+    ? "https://suncode-web-tool.vercel.app/api/convert-ai"
+    : location.hostname.includes("netlify.app")
+      ? "/.netlify/functions/convert-ai"
+      : "/api/convert-ai";
   const blob = await postAiConversion(endpoint);
   downloadBlob(blob, `${outputBaseName()}.ai`);
   setStatus("AI 已生成", "转换完成，AI 文件已开始下载。");
@@ -362,3 +365,4 @@ setButtonsEnabled(false);
 state.suncodeSvgText = decodeBase64Utf8(FIXED_SUNCODE_BASE64);
 state.suncodeDataUrl = `data:image/svg+xml;base64,${FIXED_SUNCODE_BASE64}`;
 renderPreview();
+})();

@@ -79,6 +79,15 @@ async function convertToAi({ fileBase64, filename }) {
 }
 
 module.exports = async function handler(request, response) {
+  response.setHeader("Access-Control-Allow-Origin", "*");
+  response.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (request.method === "OPTIONS") {
+    response.status(204).end();
+    return;
+  }
+
   if (request.method !== "POST") {
     response.status(405).send("Method Not Allowed");
     return;

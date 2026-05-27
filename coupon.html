@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>优惠券模板编辑器</title>
+    <link rel="stylesheet" href="./coupon.css" />
+  </head>
+  <body>
+    <main class="coupon-app">
+      <aside class="coupon-sidebar">
+        <div class="coupon-brand">
+          <span class="coupon-mark">卡</span>
+          <div>
+            <h1>抽卡机工具</h1>
+            <p>tools</p>
+          </div>
+        </div>
+
+        <section class="coupon-panel">
+          <h2>模板</h2>
+          <div class="template-grid" role="radiogroup" aria-label="选择优惠券模板">
+            <button class="template-card active" type="button" data-template="cash">
+              <span>折扣券</span>
+            </button>
+            <button class="template-card" type="button" data-template="free">
+              <span>免费券</span>
+            </button>
+            <button class="template-card" type="button" data-template="box">
+              <span>买赠券</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="coupon-panel">
+          <h2>文字</h2>
+          <label class="field">
+            <span>第一行</span>
+            <input id="line1" type="text" />
+          </label>
+          <label class="field">
+            <span>第二行</span>
+            <input id="line2" type="text" />
+          </label>
+          <label class="field">
+            <span>第三行</span>
+            <textarea id="line3" rows="3"></textarea>
+          </label>
+        </section>
+
+        <section class="coupon-panel">
+          <h2>导出</h2>
+          <div class="action-row">
+            <button id="downloadPng" type="button">下载 PNG</button>
+          </div>
+        </section>
+      </aside>
+
+      <section class="coupon-workspace">
+        <div class="coupon-toolbar">
+          <strong id="templateTitle">折扣券</strong>
+          <span>实时预览</span>
+        </div>
+        <div class="coupon-stage">
+          <div id="couponPreview" class="coupon-preview" aria-label="优惠券预览"></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="./coupon-fonts.js"></script>
+    <script src="./coupon.js"></script>
+  </body>
+</html>

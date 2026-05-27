@@ -154,6 +154,23 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.tool-link {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  color: #fff;
+  background: var(--accent);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.tool-link:hover {
+  background: var(--accent-strong);
+}
+
 .note {
   margin-top: 12px;
   font-size: 12px;
