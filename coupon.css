@@ -112,7 +112,7 @@ h2 {
 
 .template-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -145,6 +145,36 @@ h2 {
 .template-card.active {
   border-color: var(--yellow-dark);
   background: #fff8d8;
+}
+
+.file-drop.compact {
+  margin-top: 0;
+}
+
+.tag-picker {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.tag-picker[hidden] {
+  display: none;
+}
+
+.tag-option {
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  background: #fff;
+  cursor: pointer;
+  font-weight: 750;
+}
+
+.tag-option.active {
+  border-color: var(--yellow-dark);
+  background: #ffce00;
 }
 
 .field {
@@ -209,6 +239,14 @@ h2 {
   background: #000;
 }
 
+.action-row button:disabled,
+.action-row button:disabled:hover {
+  border-color: #ccd5dc;
+  color: #84919b;
+  background: #e8edf1;
+  cursor: not-allowed;
+}
+
 .coupon-workspace {
   display: grid;
   grid-template-rows: auto 1fr;
@@ -216,12 +254,25 @@ h2 {
 }
 
 .coupon-toolbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  justify-content: space-between;
+  gap: 14px 16px;
   padding: 16px 20px;
   border-bottom: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.86);
+}
+
+.coupon-toolbar > span {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.toolbar-tag-picker {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  width: min(470px, 52vw);
+  margin: 0;
 }
 
 .coupon-stage {
@@ -271,6 +322,10 @@ h2 {
 
   .coupon-stage {
     padding: 14px;
+  }
+
+  .toolbar-tag-picker {
+    width: 100%;
   }
 
   .coupon-preview {

@@ -12,20 +12,49 @@ const templates = {
     title: "买赠券",
     defaults: ["端1盒", "送1盒", "剑网3 山海同心典藏卡\n侠行包 第3弹"],
   },
+  product: {
+    title: "商品券",
+    defaults: ["", "", ""],
+  },
+};
+
+const productTags = {
+  exchange: {
+    label: "兑换券",
+    src: "./assets/product-tags/exchange.png",
+  },
+  single: {
+    label: "单抽券",
+    src: "./assets/product-tags/single.png",
+  },
+  box: {
+    label: "端盒券",
+    src: "./assets/product-tags/box.png",
+  },
 };
 
 const state = {
   template: "cash",
   lines: [...templates.cash.defaults],
   embeddedFonts: null,
+  productImageDataUrl: "",
+  productImageName: "",
+  productTag: "exchange",
+  productTagDataUrls: null,
 };
 
 const els = {
   templateTitle: document.querySelector("#templateTitle"),
   couponPreview: document.querySelector("#couponPreview"),
+  textPanel: document.querySelector("#couponTextPanel"),
+  productPanel: document.querySelector("#couponProductPanel"),
+  productTagPicker: document.querySelector("#productTagPicker"),
   line1: document.querySelector("#line1"),
   line2: document.querySelector("#line2"),
   line3: document.querySelector("#line3"),
+  productImageInput: document.querySelector("#productImageInput"),
+  productImageName: document.querySelector("#productImageName"),
+  productTagButtons: Array.from(document.querySelectorAll("[data-product-tag]")),
   downloadPng: document.querySelector("#downloadPng"),
   templateButtons: Array.from(document.querySelectorAll(".template-card")),
 };
@@ -240,18 +269,54 @@ function renderBoxTemplate(options = {}) {
   `, options);
 }
 
+function renderProductTag() {
+  const tag = productTags[state.productTag] || productTags.exchange;
+  const href = state.productTagDataUrls?.[state.productTag] || tag.src;
+
+  return `
+    <image href="${href}" x="253" y="21" width="117.5" height="263.5" preserveAspectRatio="xMidYMid meet" />`;
+}
+
+function renderProductTemplate(options = {}) {
+  const imageMarkup = state.productImageDataUrl
+    ? `<image href="${state.productImageDataUrl}" x="7.5" y="7.5" width="360" height="360" preserveAspectRatio="xMidYMid meet" />`
+    : `<g>
+        <rect x="7.5" y="7.5" width="360" height="360" rx="10" fill="#f4f7f8" stroke="#cfd8df" stroke-dasharray="8 8" />
+        <text x="187.5" y="182" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="18" fill="#7b8790">商品图预览会显示在这里</text>
+      </g>`;
+
+  return `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 375" role="img" aria-label="商品券预览">
+      <style>
+${fontFaceCss(options.fonts)}
+      </style>
+      ${imageMarkup}
+      ${renderProductTag()}
+    </svg>`;
+}
+
 function buildSvg(options = {}) {
   if (state.template === "cash") return renderCashTemplate(options);
   if (state.template === "free") return renderFreeTemplate(options);
+  if (state.template === "product") return renderProductTemplate(options);
   return renderBoxTemplate(options);
 }
 
 function render() {
+  const isProduct = state.template === "product";
   els.templateTitle.textContent = templates[state.template].title;
   els.couponPreview.innerHTML = buildSvg({ fonts: state.embeddedFonts || window.COUPON_FONT_DATA });
+  els.textPanel.hidden = isProduct;
+  els.productPanel.hidden = !isProduct;
+  els.productTagPicker.hidden = !isProduct;
+  els.downloadPng.disabled = isProduct && !state.productImageDataUrl;
 
   els.templateButtons.forEach((button) => {
     button.classList.toggle("active", button.dataset.template === state.template);
+  });
+
+  els.productTagButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.productTag === state.productTag);
   });
 }
 
@@ -261,6 +326,7 @@ function setTemplate(template) {
   els.line1.value = state.lines[0];
   els.line2.value = state.lines[1];
   els.line3.value = state.lines[2];
+  els.productImageName.textContent = state.productImageName || "未选择";
   render();
 }
 
@@ -283,6 +349,12 @@ function safeFilenamePart(value) {
 }
 
 function downloadFilename() {
+  if (state.template === "product") {
+    const name = safeFilenamePart(state.productImageName.replace(/\.[^.]+$/i, ""));
+    const tag = safeFilenamePart(productTags[state.productTag]?.label || "商品券");
+    return `${tag}${name || "商品券"}.png`;
+  }
+
   const name = state.lines
     .map(safeFilenamePart)
     .filter(Boolean)
@@ -327,8 +399,28 @@ async function loadEmbeddedFonts() {
   return state.embeddedFonts;
 }
 
+async function loadProductTagDataUrls() {
+  if (state.productTagDataUrls) return state.productTagDataUrls;
+
+  const entries = await Promise.all(
+    Object.entries(productTags).map(async ([key, tag]) => {
+      const response = await fetch(tag.src);
+      if (!response.ok) throw new Error("商品券标签素材读取失败");
+      const dataUrl = `data:image/png;base64,${arrayBufferToBase64(await response.arrayBuffer())}`;
+      return [key, dataUrl];
+    }),
+  );
+
+  state.productTagDataUrls = Object.fromEntries(entries);
+  return state.productTagDataUrls;
+}
+
 async function downloadPng() {
   const fonts = await loadEmbeddedFonts();
+  if (state.template === "product" && !state.productImageDataUrl) return;
+  if (state.template === "product") {
+    await loadProductTagDataUrls();
+  }
   const svg = buildSvg({ fonts });
   const image = new Image();
   const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }));
@@ -349,8 +441,45 @@ async function downloadPng() {
   image.src = url;
 }
 
+function readAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleProductImage(file) {
+  state.productImageDataUrl = await readAsDataUrl(file);
+  state.productImageName = file.name;
+  els.productImageName.textContent = file.name;
+  render();
+}
+
 els.templateButtons.forEach((button) => {
   button.addEventListener("click", () => setTemplate(button.dataset.template));
+});
+
+els.productTagButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    state.productTag = button.dataset.productTag;
+    render();
+  });
+});
+
+els.productImageInput.addEventListener("change", (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  handleProductImage(file).catch((error) => {
+    console.error(error);
+    state.productImageDataUrl = "";
+    state.productImageName = "";
+    els.productImageName.textContent = "读取失败";
+    render();
+    alert("商品图片读取失败，请重新选择图片。");
+  });
 });
 
 [els.line1, els.line2, els.line3].forEach((input, index) => {

@@ -20,4 +20,4 @@ navItems.forEach((item) => {
 });
 
 const initialPage = location.hash.replace("#", "");
-showPage(["coupon", "suncode"].includes(initialPage) ? initialPage : "coupon");
+showPage(["coupon", "suncode", "luck", "halfprice", "kingkong"].includes(initialPage) ? initialPage : "coupon");
