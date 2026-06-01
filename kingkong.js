@@ -64,7 +64,7 @@ function safeFilename(value) {
     .replace(/[\\/:*?"<>|]/g, "-")
     .trim();
 
-  return `一番赏金刚区-${base || "未命名"}.png`;
+  return `潮玩GO卡片区-${base || "未命名"}.png`;
 }
 
 function containRect(sourceWidth, sourceHeight, target) {
