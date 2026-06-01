@@ -19,7 +19,7 @@ const templates = {
 };
 
 const state = {
-  template: "purple",
+  template: "",
   fileName: "",
   imageUrl: "",
   image: null,
@@ -43,6 +43,18 @@ function setStatus(title, detail) {
 
 function setDownloadEnabled(enabled) {
   els.download.disabled = !enabled;
+}
+
+function setSelectedTemplate(template) {
+  state.template = template;
+  els.templateButtons.forEach((item) => {
+    item.classList.toggle("active", item.dataset.kingkongTemplate === state.template);
+  });
+}
+
+function initializeTemplateSelection() {
+  const firstTemplate = els.templateButtons[0]?.dataset.kingkongTemplate || "purple";
+  setSelectedTemplate(firstTemplate);
 }
 
 function safeFilename(value) {
@@ -160,10 +172,7 @@ async function downloadPng() {
 
 els.templateButtons.forEach((button) => {
   button.addEventListener("click", () => {
-    state.template = button.dataset.kingkongTemplate;
-    els.templateButtons.forEach((item) => {
-      item.classList.toggle("active", item.dataset.kingkongTemplate === state.template);
-    });
+    setSelectedTemplate(button.dataset.kingkongTemplate);
     renderPreview().catch((error) => {
       console.error(error);
       setStatus("模板读取失败", "请刷新页面后重试。");
@@ -191,6 +200,7 @@ els.download.addEventListener("click", () => {
 });
 
 setDownloadEnabled(false);
+initializeTemplateSelection();
 renderPreview().catch((error) => {
   console.error(error);
   setStatus("模板读取失败", "请确认模板素材已上传。");

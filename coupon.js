@@ -281,8 +281,8 @@ function renderProductTemplate(options = {}) {
   const imageMarkup = state.productImageDataUrl
     ? `<image href="${state.productImageDataUrl}" x="7.5" y="7.5" width="360" height="360" preserveAspectRatio="xMidYMid meet" />`
     : `<g>
-        <rect x="7.5" y="7.5" width="360" height="360" rx="10" fill="#f4f7f8" stroke="#cfd8df" stroke-dasharray="8 8" />
-        <text x="187.5" y="182" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="18" fill="#7b8790">商品图预览会显示在这里</text>
+        <rect x="7.5" y="7.5" width="360" height="360" rx="10" fill="none" stroke="#cfd8df" stroke-dasharray="8 8" />
+        <text x="187.5" y="187.5" text-anchor="middle" dominant-baseline="middle" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="18" fill="#7b8790">商品图预览</text>
       </g>`;
 
   return `
