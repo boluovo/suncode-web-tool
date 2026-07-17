@@ -142,7 +142,9 @@ body {
 .suncode-admin-grid,
 .luck-admin-grid,
 .halfprice-admin-grid,
-.kingkong-admin-grid {
+.kingkong-admin-grid,
+.community-admin-grid,
+.ecommerce-admin-grid {
   grid-template-columns: 340px 1fr;
 }
 
@@ -322,6 +324,197 @@ body {
   place-items: center;
 }
 
+.community-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.community-toggle input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--yellow-dark);
+}
+
+.community-stage {
+  display: grid;
+  min-height: calc(100vh - 138px);
+  padding: 24px;
+  place-items: start center;
+}
+
+.community-preview {
+  width: min(100%, 375px);
+  min-height: 638px;
+}
+
+.community-poster {
+  position: relative;
+  width: 375px;
+  overflow: hidden;
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, #fff7cc 0%, rgba(255, 251, 229, 0.2) 100%),
+    #fff;
+  box-shadow: 0 18px 48px rgba(23, 32, 38, 0.14);
+  transform-origin: top center;
+}
+
+.community-logo-image {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  display: block;
+  width: 67px;
+  height: 24px;
+  object-fit: fill;
+}
+
+.community-header-icons {
+  position: absolute;
+  right: 16px;
+  top: 20px;
+  display: block;
+  width: 69px;
+  height: 20px;
+  overflow: visible;
+  fill: #ff8000;
+}
+
+.community-header-icon-rings {
+  fill: none;
+  stroke: #ff8000;
+  stroke-width: 0.8px;
+  vector-effect: non-scaling-stroke;
+}
+
+.community-main-wrap {
+  position: absolute;
+  left: 16px;
+  top: 52px;
+  width: 343px;
+  overflow: hidden;
+  border-radius: 20px;
+  background: transparent;
+}
+
+.community-main-wrap img {
+  display: block;
+  width: 343px;
+  height: auto;
+}
+
+.community-main-placeholder {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  box-sizing: border-box;
+  border: 1px dashed #aeb9c4;
+  border-radius: 20px;
+  color: #74808a;
+  background: #fff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.community-recommend {
+  position: absolute;
+  display: block;
+  max-width: 343px;
+  height: 31px;
+  overflow: visible;
+}
+
+.community-recommend path {
+  fill: #fff;
+  stroke: #ff8000;
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}
+
+.community-recommend text {
+  fill: #ff8000;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  dominant-baseline: central;
+  text-anchor: middle;
+}
+
+.community-info {
+  position: absolute;
+  left: 16px;
+  width: 247px;
+}
+
+.community-price {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  color: #ff5555;
+  height: 24px;
+}
+
+.community-price-symbol {
+  width: 12px;
+  height: 22px;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 22px;
+}
+
+.community-price-value {
+  font-family: MotoyaCedarW6, "Arial Black", sans-serif;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 24px;
+}
+
+.community-product-name {
+  margin-top: 12px;
+  color: #191919;
+  font-size: 14px;
+  line-height: 22px;
+  max-height: 44px;
+  overflow: hidden;
+}
+
+.community-qr {
+  position: absolute;
+  right: 16px;
+  width: 72px;
+  height: 72px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.community-qr img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.community-qr-placeholder {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  border: 1px dashed #aeb9c4;
+  border-radius: 50%;
+  color: #74808a;
+  font-size: 12px;
+  line-height: 1.2;
+  text-align: center;
+}
+
 .halfprice-preview.is-grid {
   width: 100%;
   max-width: none;
@@ -395,6 +588,128 @@ body {
   white-space: nowrap;
 }
 
+.ecommerce-sidebar {
+  overflow-y: auto;
+}
+
+.ecommerce-part-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ecommerce-part-grid .template-card {
+  min-height: 58px;
+  padding: 10px;
+  align-items: center;
+  text-align: center;
+}
+
+.ecommerce-editor-panel[hidden] {
+  display: none;
+}
+
+.ecommerce-slot-picker {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.ecommerce-slot-picker.five {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.ecommerce-slot-picker button {
+  min-height: 36px;
+  padding: 0;
+  border-color: var(--line);
+  color: var(--ink);
+  background: #fff;
+}
+
+.ecommerce-slot-picker button.active {
+  border-color: var(--yellow-dark);
+  background: var(--yellow);
+}
+
+.ecommerce-file-drop {
+  margin-bottom: 14px;
+}
+
+.ecommerce-price-row {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.ecommerce-price-row > input {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  background: #fff;
+  outline: none;
+}
+
+.ecommerce-price-row > input:focus {
+  border-color: var(--yellow-dark);
+  box-shadow: 0 0 0 3px rgba(255, 206, 0, 0.16);
+}
+
+.ecommerce-price-row > input:disabled {
+  color: var(--muted);
+  background: #eef1f3;
+}
+
+.ecommerce-check {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ecommerce-check input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--yellow-dark);
+}
+
+.ecommerce-validation {
+  min-height: 18px;
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.ecommerce-validation.error {
+  color: #a33a2b;
+}
+
+.ecommerce-stage {
+  display: grid;
+  min-height: calc(100vh - 138px);
+  padding: 24px;
+  place-items: center;
+  overflow: auto;
+}
+
+.ecommerce-preview {
+  display: block;
+  width: min(100%, 560px);
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 18px 48px rgba(23, 32, 38, 0.12);
+}
+
 @media (max-width: 980px) {
   .admin-app {
     grid-template-columns: 1fr;
@@ -420,7 +735,9 @@ body {
   .suncode-admin-grid,
   .luck-admin-grid,
   .halfprice-admin-grid,
-  .kingkong-admin-grid {
+  .kingkong-admin-grid,
+  .community-admin-grid,
+  .ecommerce-admin-grid {
     grid-template-columns: 1fr;
   }
 
@@ -434,8 +751,14 @@ body {
   .canvas-wrap,
   .luck-stage,
   .halfprice-stage,
-  .kingkong-stage {
+  .kingkong-stage,
+  .community-stage,
+  .ecommerce-stage {
     min-height: 58vh;
+  }
+
+  .community-poster {
+    transform: scale(min(1, calc((100vw - 48px) / 375)));
   }
 }
 

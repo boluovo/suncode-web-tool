@@ -40,6 +40,14 @@
             <span>潮玩GO卡片区</span>
             <small>商品图叠加模板</small>
           </button>
+          <button class="admin-nav-item" type="button" data-page="community">
+            <span>社群宣发</span>
+            <small>宣发模版</small>
+          </button>
+          <button class="admin-nav-item" type="button" data-page="ecommerce">
+            <span>电商会员日</span>
+            <small>会员日宣发模版</small>
+          </button>
         </nav>
       </aside>
 
@@ -326,6 +334,164 @@
             </section>
           </div>
         </section>
+
+        <section id="communityPage" class="admin-page" data-page-panel="community">
+          <div class="admin-header">
+            <div>
+              <strong>社群宣发</strong>
+              <span>上传主图、小程序码，填写价格和商品名称后导出 3 倍 PNG。</span>
+            </div>
+          </div>
+
+          <div class="admin-tool-grid community-admin-grid">
+            <aside class="sidebar embedded">
+              <section class="panel">
+                <h2>图片</h2>
+                <label class="file-drop">
+                  <input id="communityMainInput" type="file" accept="image/png,image/jpeg,image/webp" />
+                  <span>选择主图</span>
+                  <small id="communityMainName">未选择</small>
+                </label>
+                <label class="file-drop">
+                  <input id="communityQrInput" type="file" accept="image/png,image/jpeg,image/webp" />
+                  <span>选择小程序码</span>
+                  <small id="communityQrName">未选择</small>
+                </label>
+                <p class="note">主图宽度固定 343px，高度按图片比例自适应。</p>
+              </section>
+
+              <section class="panel">
+                <h2>内容</h2>
+                <label class="field">
+                  <span>商品价格</span>
+                  <input id="communityPrice" type="text" value="25.98" />
+                </label>
+                <label class="field">
+                  <span>商品名称</span>
+                  <textarea id="communityName" rows="2">飞天小女警 活力绘影立牌 飞天小女警 活力绘影立牌</textarea>
+                </label>
+                <label class="community-toggle">
+                  <input id="communityRecommendEnabled" type="checkbox" />
+                  <span>显示推荐语</span>
+                </label>
+                <label id="communityRecommendField" class="field" hidden>
+                  <span>推荐语</span>
+                  <textarea id="communityRecommendText" rows="2">🔥火爆热卖中，快来抽卡机买同款吧商品购买推荐语</textarea>
+                </label>
+              </section>
+
+              <section class="panel">
+                <h2>导出</h2>
+                <div class="action-row">
+                  <button id="downloadCommunityPng" type="button" disabled>下载 PNG</button>
+                </div>
+              </section>
+            </aside>
+
+            <section class="workspace embedded">
+              <div class="toolbar">
+                <div>
+                  <strong id="communityStatusTitle">等待文件</strong>
+                  <span id="communityStatusDetail">请上传主图和小程序码。</span>
+                </div>
+              </div>
+              <div class="community-stage">
+                <div id="communityPreview" class="community-preview" aria-label="社群宣发预览">
+                  <div class="empty-state">社群宣发预览会显示在这里</div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section id="ecommercePage" class="admin-page" data-page-panel="ecommerce">
+          <div class="admin-header">
+            <div>
+              <strong>电商会员日</strong>
+              <span>编辑会员日三个部分并分别导出 3 倍 PNG。</span>
+            </div>
+          </div>
+
+          <div class="admin-tool-grid ecommerce-admin-grid">
+            <aside class="coupon-sidebar embedded ecommerce-sidebar">
+              <section class="coupon-panel">
+                <h2>类别</h2>
+                <div class="template-grid ecommerce-part-grid" role="radiogroup" aria-label="选择电商会员日类别">
+                  <button class="template-card active" type="button" data-ecommerce-part="part1"><span>PART 1</span></button>
+                  <button class="template-card" type="button" data-ecommerce-part="part2"><span>PART 2</span></button>
+                  <button class="template-card" type="button" data-ecommerce-part="part3"><span>PART 3</span></button>
+                </div>
+              </section>
+
+              <section id="ecommercePart1Panel" class="coupon-panel ecommerce-editor-panel">
+                <h2>内容</h2>
+                <label class="field">
+                  <span>日期</span>
+                  <textarea id="ecommerceDate" rows="2">2026.07.17</textarea>
+                </label>
+                <label class="field">
+                  <span>一行文案</span>
+                  <textarea id="ecommerceCopy" rows="2">会员购名侦探柯南系列产品</textarea>
+                </label>
+              </section>
+
+              <section id="ecommercePart2Panel" class="coupon-panel ecommerce-editor-panel" hidden>
+                <h2>商品坑位</h2>
+                <div id="ecommercePart2Slots" class="ecommerce-slot-picker" role="radiogroup" aria-label="选择第二部分商品坑位"></div>
+                <label class="file-drop compact ecommerce-file-drop">
+                  <input id="ecommercePart2Image" type="file" accept="image/png,image/jpeg,image/webp" />
+                  <span>选择商品图片</span>
+                  <small id="ecommercePart2ImageName">未选择</small>
+                </label>
+                <label class="field">
+                  <span>商品名称（超宽自动换行，也可手动换行）</span>
+                  <textarea id="ecommercePart2Name" rows="2"></textarea>
+                </label>
+                <div class="ecommerce-price-row">
+                  <label class="ecommerce-check"><input id="ecommercePointsEnabled" type="checkbox" checked /><span>积分</span></label>
+                  <input id="ecommercePoints" type="text" inputmode="decimal" placeholder="例如 55" />
+                </div>
+                <div class="ecommerce-price-row">
+                  <label class="ecommerce-check"><input id="ecommerceYuanEnabled" type="checkbox" checked /><span>人民币</span></label>
+                  <input id="ecommerceYuan" type="text" inputmode="decimal" placeholder="例如 0.01" />
+                </div>
+              </section>
+
+              <section id="ecommercePart3Panel" class="coupon-panel ecommerce-editor-panel" hidden>
+                <h2>转盘商品坑位</h2>
+                <div id="ecommercePart3Slots" class="ecommerce-slot-picker five" role="radiogroup" aria-label="选择第三部分商品坑位"></div>
+                <label class="file-drop compact ecommerce-file-drop">
+                  <input id="ecommercePart3Image" type="file" accept="image/png,image/jpeg,image/webp" />
+                  <span>选择商品图片</span>
+                  <small id="ecommercePart3ImageName">未选择</small>
+                </label>
+                <label class="field">
+                  <span>商品名称（超宽自动换行，也可手动换行）</span>
+                  <textarea id="ecommercePart3Name" rows="2"></textarea>
+                </label>
+                <p class="note">上传图片后会尝试识别商品名称；“谢谢参与”和“30积分”为固定内容。</p>
+              </section>
+
+              <section class="coupon-panel">
+                <h2>导出</h2>
+                <p id="ecommerceValidation" class="ecommerce-validation"></p>
+                <div class="action-row">
+                  <button id="downloadEcommercePng" type="button">下载 PNG</button>
+                </div>
+              </section>
+            </aside>
+
+            <section class="coupon-workspace embedded">
+              <div class="coupon-toolbar">
+                <strong id="ecommercePartTitle">PART 1</strong>
+                <span id="ecommerceStatusDetail">实时预览</span>
+              </div>
+              <div class="ecommerce-stage">
+                <canvas id="ecommercePreview" class="ecommerce-preview" aria-label="电商会员日预览"></canvas>
+              </div>
+            </section>
+          </div>
+        </section>
       </section>
     </main>
 
@@ -336,6 +502,10 @@
     <script src="./halfprice.js"></script>
     <script src="./kingkong-assets.js"></script>
     <script src="./kingkong.js"></script>
+    <script src="./community-header-data.js"></script>
+    <script src="./community.js"></script>
+    <script src="./ecommerce-assets.js"></script>
+    <script src="./ecommerce.js"></script>
     <script src="./dashboard.js"></script>
   </body>
 </html>
