@@ -3,10 +3,10 @@
   if (!page) return;
 
   const parts = {
-    part1: { title: "PART 1", width: 375, height: 480, exportWidth: 1125, exportHeight: 1440 },
-    part2: { title: "PART 2", width: 375, height: 302, exportWidth: 1125, exportHeight: 906 },
-    part3: { title: "PART 3", width: 375, height: 446.615, exportWidth: 1125, exportHeight: 1340 },
-    part4: { title: "PART 4", width: 375, height: 479.427, exportWidth: 1125, exportHeight: 1438 },
+    part1: { title: "PART 1", width: 375, height: 480 },
+    part2: { title: "PART 2", width: 375, height: 302 },
+    part3: { title: "PART 3", width: 375, height: 446.615 },
+    part4: { title: "PART 4", width: 375, height: 479.427 },
   };
 
   function currentDateText() {
@@ -47,7 +47,10 @@
     partTitle: page.querySelector("#ecommercePartTitle"),
     statusDetail: page.querySelector("#ecommerceStatusDetail"),
     validation: page.querySelector("#ecommerceValidation"),
-    download: page.querySelector("#downloadEcommercePng"),
+    downloads: [
+      { button: page.querySelector("#downloadEcommerce1199"), width: 1199 },
+      { button: page.querySelector("#downloadEcommerce1440"), width: 1440 },
+    ],
     partButtons: Array.from(page.querySelectorAll("[data-ecommerce-part]")),
     part1Panel: page.querySelector("#ecommercePart1Panel"),
     part2Panel: page.querySelector("#ecommercePart2Panel"),
@@ -406,8 +409,8 @@
   function renderCanvas() {
     const config = parts[state.part];
     const canvas = els.canvas;
-    canvas.width = config.exportWidth;
-    canvas.height = config.exportHeight;
+    canvas.width = 1440;
+    canvas.height = Math.round((1440 * config.height) / config.width);
     canvas.style.aspectRatio = `${config.width} / ${config.height}`;
     const context = canvas.getContext("2d");
     context.setTransform(canvas.width / config.width, 0, 0, canvas.height / config.height, 0, 0);
@@ -468,8 +471,8 @@
     const valid = ready && isPartValid();
     els.validation.textContent = message;
     els.validation.classList.toggle("error", !valid);
-    els.statusDetail.textContent = valid ? "内容已完整，预览与 3 倍导出一致。" : message;
-    els.download.disabled = !valid;
+    els.statusDetail.textContent = valid ? "内容已完整，可导出 1199px 或 1440px 宽 PNG。" : message;
+    els.downloads.forEach(({ button }) => { button.disabled = !valid; });
     if (ready) renderCanvas();
   }
 
@@ -583,18 +586,28 @@
       render();
     });
 
-    els.download.addEventListener("click", () => {
+    function downloadAtWidth(width) {
       if (!isPartValid()) return;
-      els.canvas.toBlob((blob) => {
+      const config = parts[state.part];
+      const output = document.createElement("canvas");
+      output.width = width;
+      output.height = Math.round((width * config.height) / config.width);
+      const context = output.getContext("2d");
+      context.drawImage(els.canvas, 0, 0, output.width, output.height);
+      output.toBlob((blob) => {
         if (!blob) return;
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = `电商会员日-${parts[state.part].title}.png`;
+        link.download = `电商会员日-${config.title}-${width}px.png`;
         document.body.appendChild(link);
         link.click();
         link.remove();
         URL.revokeObjectURL(link.href);
       }, "image/png");
+    }
+
+    els.downloads.forEach(({ button, width }) => {
+      button.addEventListener("click", () => downloadAtWidth(width));
     });
   }
 
@@ -629,7 +642,7 @@
       render();
     } catch (error) {
       els.statusDetail.textContent = `底图读取失败：${error.message}`;
-      els.download.disabled = true;
+      els.downloads.forEach(({ button }) => { button.disabled = true; });
     }
   }
 
