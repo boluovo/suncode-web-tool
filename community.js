@@ -18,6 +18,7 @@ const measureContext = document.createElement("canvas").getContext("2d");
 const state = {
   price: "25.98",
   halfPriceEnabled: false,
+  halfPriceText: "限时半价",
   originalPrice: "99.9",
   productName: "飞天小女警 活力绘影立牌 飞天小女警 活力绘影立牌",
   operationEnabled: false,
@@ -45,6 +46,8 @@ const els = {
   operationText: document.querySelector("#communityOperationText"),
   price: document.querySelector("#communityPrice"),
   halfPriceEnabled: document.querySelector("#communityHalfPriceEnabled"),
+  halfPriceTextField: document.querySelector("#communityHalfPriceTextField"),
+  halfPriceText: document.querySelector("#communityHalfPriceText"),
   originalPriceField: document.querySelector("#communityOriginalPriceField"),
   originalPrice: document.querySelector("#communityOriginalPrice"),
   productName: document.querySelector("#communityName"),
@@ -84,6 +87,12 @@ function operationLabel() {
   const text = fitTextWithEllipsis(measureContext, state.operationText, OPERATION_TEXT_MAX_WIDTH);
   const textWidth = Math.ceil(measureContext.measureText(text).width);
   return { text, bodyWidth: Math.min(OPERATION_BODY_MAX_WIDTH, textWidth + 38) };
+}
+
+function displayedHalfPriceText() {
+  const text = limitCharacters(state.halfPriceText, 8);
+  measureContext.font = "13px PingFang SC, Microsoft YaHei, sans-serif";
+  return { text, width: Math.max(16, Math.ceil(measureContext.measureText(text).width) + 8) };
 }
 
 function readAsDataUrl(file) {
@@ -200,6 +209,7 @@ function renderPoster() {
   const recommendBoxWidth = recommendWidth(recommendText);
   const recommendLeft = MAIN_X;
   const operation = operationLabel();
+  const halfPriceLabel = displayedHalfPriceText();
 
   els.preview.innerHTML = `
     <div class="community-poster" style="height: ${currentLayout.posterHeight}px">
@@ -223,7 +233,7 @@ function renderPoster() {
           <span class="community-price-symbol">¥</span>
           <span class="community-price-value">${escapeHtml(state.price || "0")}</span>
           ${state.halfPriceEnabled
-            ? `<span class="community-half-price-label">限时半价</span><span class="community-original-price">¥${escapeHtml(state.originalPrice || "0")}</span>`
+            ? `<span class="community-half-price-label" style="width: ${halfPriceLabel.width}px">${escapeHtml(halfPriceLabel.text)}</span><span class="community-original-price">¥${escapeHtml(state.originalPrice || "0")}</span>`
             : ""}
         </div>
         <div class="community-product-name">${currentLayout.productLines.map(escapeHtml).join("<br>")}</div>
@@ -240,6 +250,7 @@ function renderPoster() {
   els.operationField.hidden = !state.operationEnabled;
   els.operationEnabled.checked = state.operationEnabled;
   els.originalPriceField.hidden = !state.halfPriceEnabled;
+  els.halfPriceTextField.hidden = !state.halfPriceEnabled;
   els.halfPriceEnabled.checked = state.halfPriceEnabled;
   setStatus();
 }
@@ -366,10 +377,11 @@ function drawPoster(context, scale = 1) {
   context.fillText(priceText, 30, currentLayout.infoTop + 24);
 
   if (state.halfPriceEnabled) {
+    const halfPriceLabel = displayedHalfPriceText();
     const priceRight = 30 + context.measureText(priceText).width;
     const labelLeft = priceRight + 4;
     context.fillStyle = "#fff8f8";
-    drawRoundRect(context, labelLeft, currentLayout.infoTop + 4, 60, 20, 6);
+    drawRoundRect(context, labelLeft, currentLayout.infoTop + 4, halfPriceLabel.width, 20, 6);
     context.fill();
     context.strokeStyle = "#ffd4dd";
     context.lineWidth = 0.5;
@@ -378,10 +390,10 @@ function drawPoster(context, scale = 1) {
     context.font = "13px PingFang SC, Microsoft YaHei, sans-serif";
     context.textAlign = "center";
     context.textBaseline = "middle";
-    context.fillText("限时半价", labelLeft + 30, currentLayout.infoTop + 14);
+    context.fillText(halfPriceLabel.text, labelLeft + halfPriceLabel.width / 2, currentLayout.infoTop + 14);
 
     const originalText = `¥${state.originalPrice || "0"}`;
-    const originalLeft = labelLeft + 64;
+    const originalLeft = labelLeft + halfPriceLabel.width + 4;
     context.fillStyle = "#999";
     context.font = "16px PingFang SC, Microsoft YaHei, sans-serif";
     context.textAlign = "left";
@@ -521,6 +533,11 @@ els.originalPrice.addEventListener("input", () => {
   renderPoster();
 });
 
+els.halfPriceText.addEventListener("input", () => {
+  state.halfPriceText = els.halfPriceText.value;
+  renderPoster();
+});
+
 els.productName.addEventListener("input", () => {
   state.productName = els.productName.value;
   renderPoster();
@@ -549,6 +566,7 @@ renderPoster();
 els.recommendText.value = state.recommendText;
 els.operationText.value = state.operationText;
 els.originalPrice.value = state.originalPrice;
+els.halfPriceText.value = state.halfPriceText;
 Promise.all([loadImage(HEADER_LOGO_URL), loadImage(OPERATION_ICON_URL)])
   .then(([headerImage, operationIconImage]) => {
     state.headerImage = headerImage;

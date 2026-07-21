@@ -378,10 +378,16 @@
                   <input id="communityHalfPriceEnabled" type="checkbox" />
                   <span>限时半价</span>
                 </label>
-                <label id="communityOriginalPriceField" class="field" hidden>
-                  <span>划线价</span>
-                  <input id="communityOriginalPrice" type="text" value="99.9" />
-                </label>
+                <div class="community-half-price-fields">
+                  <label id="communityHalfPriceTextField" class="field" hidden>
+                    <span>半价标签文案</span>
+                    <input id="communityHalfPriceText" type="text" value="限时半价" maxlength="12" />
+                  </label>
+                  <label id="communityOriginalPriceField" class="field" hidden>
+                    <span>划线价</span>
+                    <input id="communityOriginalPrice" type="text" value="99.9" />
+                  </label>
+                </div>
                 <label class="field">
                   <span>商品名称</span>
                   <textarea id="communityName" rows="2">飞天小女警 活力绘影立牌 飞天小女警 活力绘影立牌</textarea>
@@ -436,6 +442,7 @@
                   <button class="template-card active" type="button" data-ecommerce-part="part1"><span>PART 1</span></button>
                   <button class="template-card" type="button" data-ecommerce-part="part2"><span>PART 2</span></button>
                   <button class="template-card" type="button" data-ecommerce-part="part3"><span>PART 3</span></button>
+                  <button class="template-card" type="button" data-ecommerce-part="part4"><span>PART 4</span></button>
                 </div>
               </section>
 
@@ -486,6 +493,33 @@
                   <textarea id="ecommercePart3Name" rows="2"></textarea>
                 </label>
                 <p class="note">上传图片后会尝试识别商品名称；“谢谢参与”和“30积分”为固定内容。</p>
+              </section>
+
+              <section id="ecommercePart4Panel" class="coupon-panel ecommerce-editor-panel" hidden>
+                <h2>日期</h2>
+                <label class="field">
+                  <span>日期</span>
+                  <textarea id="ecommercePart4Date" rows="2"></textarea>
+                </label>
+                <h3 class="ecommerce-section-title">商品坑位</h3>
+                <div id="ecommercePart4Slots" class="ecommerce-slot-picker" role="radiogroup" aria-label="选择第四部分商品坑位"></div>
+                <label class="file-drop compact ecommerce-file-drop">
+                  <input id="ecommercePart4Image" type="file" accept="image/png,image/jpeg,image/webp" />
+                  <span>选择商品图片</span>
+                  <small id="ecommercePart4ImageName">未选择</small>
+                </label>
+                <label class="field">
+                  <span>商品名称（超宽自动换行，也可手动换行）</span>
+                  <textarea id="ecommercePart4Name" rows="2"></textarea>
+                </label>
+                <div class="ecommerce-price-row">
+                  <label class="ecommerce-check"><input id="ecommercePart4PointsEnabled" type="checkbox" checked /><span>积分</span></label>
+                  <input id="ecommercePart4Points" type="text" inputmode="decimal" placeholder="例如 55" />
+                </div>
+                <div class="ecommerce-price-row">
+                  <label class="ecommerce-check"><input id="ecommercePart4YuanEnabled" type="checkbox" checked /><span>人民币</span></label>
+                  <input id="ecommercePart4Yuan" type="text" inputmode="decimal" placeholder="例如 0.01" />
+                </div>
               </section>
 
               <section class="coupon-panel">

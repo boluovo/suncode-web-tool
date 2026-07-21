@@ -6,6 +6,7 @@
     part1: { title: "PART 1", width: 375, height: 480, exportWidth: 1125, exportHeight: 1440 },
     part2: { title: "PART 2", width: 375, height: 302, exportWidth: 1125, exportHeight: 906 },
     part3: { title: "PART 3", width: 375, height: 446.615, exportWidth: 1125, exportHeight: 1340 },
+    part4: { title: "PART 4", width: 375, height: 479.427, exportWidth: 1125, exportHeight: 1438 },
   };
 
   function currentDateText() {
@@ -27,14 +28,17 @@
   });
 
   const emptyPart3Item = () => ({ imageDataUrl: "", imageName: "", name: "" });
+  const emptyPart4Item = () => ({ ...emptyPart2Item(), yuanEnabled: false });
 
   const state = {
     part: "part1",
     part1: { date: currentDateText(), copy: "会员购名侦探柯南系列产品" },
     part2: Array.from({ length: 6 }, emptyPart2Item),
     part3: Array.from({ length: 5 }, emptyPart3Item),
+    part4: { date: currentDateText(), items: Array.from({ length: 6 }, emptyPart4Item) },
     part2Slot: 0,
     part3Slot: 0,
+    part4Slot: 0,
     backgrounds: {},
   };
 
@@ -48,6 +52,7 @@
     part1Panel: page.querySelector("#ecommercePart1Panel"),
     part2Panel: page.querySelector("#ecommercePart2Panel"),
     part3Panel: page.querySelector("#ecommercePart3Panel"),
+    part4Panel: page.querySelector("#ecommercePart4Panel"),
     date: page.querySelector("#ecommerceDate"),
     copy: page.querySelector("#ecommerceCopy"),
     part2Slots: page.querySelector("#ecommercePart2Slots"),
@@ -62,6 +67,15 @@
     part3Image: page.querySelector("#ecommercePart3Image"),
     part3ImageName: page.querySelector("#ecommercePart3ImageName"),
     part3Name: page.querySelector("#ecommercePart3Name"),
+    part4Date: page.querySelector("#ecommercePart4Date"),
+    part4Slots: page.querySelector("#ecommercePart4Slots"),
+    part4Image: page.querySelector("#ecommercePart4Image"),
+    part4ImageName: page.querySelector("#ecommercePart4ImageName"),
+    part4Name: page.querySelector("#ecommercePart4Name"),
+    part4PointsEnabled: page.querySelector("#ecommercePart4PointsEnabled"),
+    part4Points: page.querySelector("#ecommercePart4Points"),
+    part4YuanEnabled: page.querySelector("#ecommercePart4YuanEnabled"),
+    part4Yuan: page.querySelector("#ecommercePart4Yuan"),
   };
 
   const fontFamily = '"PingFang SC", "Microsoft YaHei", sans-serif';
@@ -185,9 +199,8 @@
     context.restore();
   }
 
-  function drawPart1(context) {
-    const date = state.part1.date.trim();
-    const copy = Array.from(state.part1.copy.trim()).slice(0, 25).join("");
+  function drawDate(context, dateValue) {
+    const date = dateValue.trim();
     const gradient = context.createLinearGradient(0, 151, 0, 176);
     gradient.addColorStop(0, "#fefae5");
     gradient.addColorStop(1, "#fcee70");
@@ -229,6 +242,11 @@
     context.shadowColor = "transparent";
     context.fillText(date, dateX, 172);
     context.restore();
+  }
+
+  function drawPart1(context) {
+    const copy = Array.from(state.part1.copy.trim()).slice(0, 25).join("");
+    drawDate(context, state.part1.date);
 
     context.save();
     context.beginPath();
@@ -265,11 +283,10 @@
     context.restore();
   }
 
-  function drawPart2(context) {
+  function drawProductGrid(context, items, rowTop) {
     const imageX = [37, 142, 246];
     const textX = [75, 180, 284];
-    const rowTop = [94, 172];
-    state.part2.forEach((item, index) => {
+    items.forEach((item, index) => {
       const column = index % 3;
       const row = Math.floor(index / 3);
       drawContain(context, item.image, imageX[column], rowTop[row] + 2, 34, 48);
@@ -286,6 +303,15 @@
         context.restore();
       }
     });
+  }
+
+  function drawPart2(context) {
+    drawProductGrid(context, state.part2, [94, 172]);
+  }
+
+  function drawPart4(context) {
+    drawDate(context, state.part4.date);
+    drawProductGrid(context, state.part4.items, [271, 349]);
   }
 
   const wheelSlots = [
@@ -355,11 +381,13 @@
       return missing.length ? `请填写：${missing.join("、")}` : "内容已填写完整，可以下载。";
     }
 
-    const items = state[part];
+    if (part === "part4" && !state.part4.date.trim()) return "请填写：日期";
+
+    const items = part === "part4" ? state.part4.items : state[part];
     const incomplete = [];
     items.forEach((item, index) => {
       let valid = Boolean(item.imageDataUrl && item.name.trim());
-      if (part === "part2") {
+      if (part === "part2" || part === "part4") {
         valid = valid && (item.pointsEnabled || item.yuanEnabled);
         if (item.pointsEnabled) valid = valid && Boolean(item.points.trim());
         if (item.yuanEnabled) valid = valid && Boolean(item.yuan.trim());
@@ -371,6 +399,7 @@
 
   function isPartValid(part = state.part) {
     if (part === "part1") return Boolean(state.part1.date.trim() && state.part1.copy.trim());
+    if (part === "part4" && !state.part4.date.trim()) return false;
     return !validationForPart(part).startsWith("请完成");
   }
 
@@ -387,6 +416,7 @@
     if (state.part === "part1") drawPart1(context);
     if (state.part === "part2") drawPart2(context);
     if (state.part === "part3") drawPart3(context);
+    if (state.part === "part4") drawPart4(context);
   }
 
   function refreshPart2Editor() {
@@ -409,15 +439,30 @@
     Array.from(els.part3Slots.children).forEach((button, index) => button.classList.toggle("active", index === state.part3Slot));
   }
 
+  function refreshPart4Editor() {
+    const item = state.part4.items[state.part4Slot];
+    els.part4ImageName.textContent = item.imageName || "未选择";
+    els.part4Name.value = item.name;
+    els.part4PointsEnabled.checked = item.pointsEnabled;
+    els.part4Points.value = item.points;
+    els.part4Points.disabled = !item.pointsEnabled;
+    els.part4YuanEnabled.checked = item.yuanEnabled;
+    els.part4Yuan.value = item.yuan;
+    els.part4Yuan.disabled = !item.yuanEnabled;
+    Array.from(els.part4Slots.children).forEach((button, index) => button.classList.toggle("active", index === state.part4Slot));
+  }
+
   function render() {
     const config = parts[state.part];
     els.partTitle.textContent = config.title;
     els.part1Panel.hidden = state.part !== "part1";
     els.part2Panel.hidden = state.part !== "part2";
     els.part3Panel.hidden = state.part !== "part3";
+    els.part4Panel.hidden = state.part !== "part4";
     els.partButtons.forEach((button) => button.classList.toggle("active", button.dataset.ecommercePart === state.part));
     if (state.part === "part2") refreshPart2Editor();
     if (state.part === "part3") refreshPart3Editor();
+    if (state.part === "part4") refreshPart4Editor();
     const ready = Boolean(state.backgrounds[state.part]);
     const message = ready ? validationForPart() : "正在读取模板底图…";
     const valid = ready && isPartValid();
@@ -458,6 +503,10 @@
     });
     els.copy.addEventListener("input", () => {
       state.part1.copy = els.copy.value;
+      render();
+    });
+    els.part4Date.addEventListener("input", () => {
+      state.part4.date = els.part4Date.value;
       render();
     });
 
@@ -505,6 +554,35 @@
     });
     els.part3Name.addEventListener("input", () => updateAndRender(state.part3[state.part3Slot], "name", els.part3Name.value));
 
+    els.part4Image.addEventListener("change", async () => {
+      try {
+        const upload = await readUpload(els.part4Image);
+        if (!upload) return;
+        const item = state.part4.items[state.part4Slot];
+        Object.assign(item, { imageDataUrl: upload.dataUrl, image: upload.image, imageName: upload.name });
+        if (!item.name.trim()) item.name = await recognizeProductName(upload);
+        els.part4Image.value = "";
+        render();
+      } catch (error) {
+        els.statusDetail.textContent = `商品图片读取失败：${error.message}`;
+      }
+    });
+    els.part4Name.addEventListener("input", () => updateAndRender(state.part4.items[state.part4Slot], "name", els.part4Name.value));
+    els.part4Points.addEventListener("input", () => updateAndRender(state.part4.items[state.part4Slot], "points", els.part4Points.value));
+    els.part4Yuan.addEventListener("input", () => updateAndRender(state.part4.items[state.part4Slot], "yuan", els.part4Yuan.value));
+    els.part4PointsEnabled.addEventListener("change", () => {
+      const item = state.part4.items[state.part4Slot];
+      if (!els.part4PointsEnabled.checked && !item.yuanEnabled) els.part4PointsEnabled.checked = true;
+      item.pointsEnabled = els.part4PointsEnabled.checked;
+      render();
+    });
+    els.part4YuanEnabled.addEventListener("change", () => {
+      const item = state.part4.items[state.part4Slot];
+      if (!els.part4YuanEnabled.checked && !item.pointsEnabled) els.part4YuanEnabled.checked = true;
+      item.yuanEnabled = els.part4YuanEnabled.checked;
+      render();
+    });
+
     els.download.addEventListener("click", () => {
       if (!isPartValid()) return;
       els.canvas.toBlob((blob) => {
@@ -523,6 +601,7 @@
   async function initialize() {
     els.date.value = state.part1.date;
     els.copy.value = state.part1.copy;
+    els.part4Date.value = state.part4.date;
     buildSlotPicker(els.part2Slots, 6, (index) => {
       state.part2Slot = index;
       refreshPart2Editor();
@@ -531,12 +610,21 @@
       state.part3Slot = index;
       refreshPart3Editor();
     });
+    buildSlotPicker(els.part4Slots, 6, (index) => {
+      state.part4Slot = index;
+      refreshPart4Editor();
+    });
     bindEvents();
     render();
     try {
       const assets = window.ECOMMERCE_ASSETS || {};
-      const [part1, part2, part3] = await Promise.all([loadImage(assets.part1), loadImage(assets.part2), loadImage(assets.part3)]);
-      state.backgrounds = { part1, part2, part3 };
+      const [part1, part2, part3, part4] = await Promise.all([
+        loadImage(assets.part1),
+        loadImage(assets.part2),
+        loadImage(assets.part3),
+        loadImage(assets.part4),
+      ]);
+      state.backgrounds = { part1, part2, part3, part4 };
       await document.fonts?.ready;
       render();
     } catch (error) {

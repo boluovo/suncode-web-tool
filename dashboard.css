@@ -468,7 +468,7 @@ body {
 .community-price {
   display: flex;
   align-items: flex-end;
-  gap: 2px;
+  gap: 0;
   color: #ff0040;
   height: 24px;
   white-space: nowrap;
@@ -484,6 +484,7 @@ body {
 }
 
 .community-price-value {
+  margin-left: 2px;
   font-family: MotoyaCedarW6, "Arial Black", sans-serif;
   font-size: 24px;
   font-weight: 900;
@@ -492,12 +493,12 @@ body {
 
 .community-half-price-label {
   display: inline-flex;
-  width: 60px;
+  flex: 0 0 auto;
   height: 20px;
   box-sizing: border-box;
   align-items: center;
   justify-content: center;
-  margin-left: 2px;
+  margin-left: 4px;
   border: 0.5px solid #ffd4dd;
   border-radius: 6px;
   color: #ff0040;
@@ -505,11 +506,30 @@ body {
   font-size: 13px;
   font-weight: 400;
   line-height: 18px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.community-half-price-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.community-half-price-fields .field {
+  min-width: 0;
+}
+
+.community-half-price-fields input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .community-original-price {
   height: 18px;
-  margin-left: 2px;
+  margin-left: 4px;
   color: #999;
   font-size: 16px;
   font-weight: 400;
@@ -634,7 +654,7 @@ body {
 }
 
 .ecommerce-part-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .ecommerce-part-grid .template-card {
@@ -646,6 +666,13 @@ body {
 
 .ecommerce-editor-panel[hidden] {
   display: none;
+}
+
+.ecommerce-section-title {
+  margin: 20px 0 12px;
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 700;
 }
 
 .ecommerce-slot-picker {
