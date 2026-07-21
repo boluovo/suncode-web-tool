@@ -339,7 +339,7 @@
           <div class="admin-header">
             <div>
               <strong>社群宣发</strong>
-              <span>上传主图、小程序码，填写价格和商品名称后导出 3 倍 PNG。</span>
+              <span>上传主图、小程序码，填写价格和商品名称后导出 3 倍 JPG。</span>
             </div>
           </div>
 
@@ -362,9 +362,25 @@
 
               <section class="panel">
                 <h2>内容</h2>
+                <label class="community-toggle">
+                  <input id="communityOperationEnabled" type="checkbox" />
+                  <span>显示运营标签</span>
+                </label>
+                <label id="communityOperationField" class="field" hidden>
+                  <span>运营标签文案</span>
+                  <input id="communityOperationText" type="text" value="本期新品" />
+                </label>
                 <label class="field">
                   <span>商品价格</span>
                   <input id="communityPrice" type="text" value="25.98" />
+                </label>
+                <label class="community-toggle">
+                  <input id="communityHalfPriceEnabled" type="checkbox" />
+                  <span>限时半价</span>
+                </label>
+                <label id="communityOriginalPriceField" class="field" hidden>
+                  <span>划线价</span>
+                  <input id="communityOriginalPrice" type="text" value="99.9" />
                 </label>
                 <label class="field">
                   <span>商品名称</span>
@@ -383,7 +399,7 @@
               <section class="panel">
                 <h2>导出</h2>
                 <div class="action-row">
-                  <button id="downloadCommunityPng" type="button" disabled>下载 PNG</button>
+                  <button id="downloadCommunityJpg" type="button" disabled>下载 JPG</button>
                 </div>
               </section>
             </aside>

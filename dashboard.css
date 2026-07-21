@@ -374,22 +374,39 @@ body {
   object-fit: fill;
 }
 
-.community-header-icons {
+.community-operation {
   position: absolute;
   right: 16px;
-  top: 20px;
-  display: block;
-  width: 69px;
-  height: 20px;
+  top: 16px;
+  height: 24px;
   overflow: visible;
-  fill: #ff8000;
+  border-radius: 8px;
+  background: linear-gradient(166.76deg, #ff7b2a 0%, #ff51cb 100%);
 }
 
-.community-header-icon-rings {
-  fill: none;
-  stroke: #ff8000;
-  stroke-width: 0.8px;
-  vector-effect: non-scaling-stroke;
+.community-operation img {
+  position: absolute;
+  left: -4px;
+  top: -8px;
+  display: block;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.community-operation span {
+  position: absolute;
+  left: 30px;
+  right: 8px;
+  top: 1px;
+  height: 21px;
+  overflow: hidden;
+  color: #fff;
+  font-family: HYFengShangHei75J, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 21px;
+  white-space: nowrap;
 }
 
 .community-main-wrap {
@@ -424,26 +441,22 @@ body {
 
 .community-recommend {
   position: absolute;
-  display: block;
+  display: flex;
   max-width: 343px;
-  height: 31px;
-  overflow: visible;
-}
-
-.community-recommend path {
-  fill: #fff;
-  stroke: #ff8000;
-  stroke-width: 1px;
-  vector-effect: non-scaling-stroke;
-}
-
-.community-recommend text {
-  fill: #ff8000;
+  height: 26px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid #ff8000;
+  border-radius: 8px;
+  color: #ff8000;
+  background: #fff;
   font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 13px;
   font-weight: 500;
-  dominant-baseline: central;
-  text-anchor: middle;
+  line-height: 24px;
+  white-space: nowrap;
 }
 
 .community-info {
@@ -456,8 +469,9 @@ body {
   display: flex;
   align-items: flex-end;
   gap: 2px;
-  color: #ff5555;
+  color: #ff0040;
   height: 24px;
+  white-space: nowrap;
 }
 
 .community-price-symbol {
@@ -474,6 +488,33 @@ body {
   font-size: 24px;
   font-weight: 900;
   line-height: 24px;
+}
+
+.community-half-price-label {
+  display: inline-flex;
+  width: 60px;
+  height: 20px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  margin-left: 2px;
+  border: 0.5px solid #ffd4dd;
+  border-radius: 6px;
+  color: #ff0040;
+  background: #fff8f8;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.community-original-price {
+  height: 18px;
+  margin-left: 2px;
+  color: #999;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 18px;
+  text-decoration: line-through;
 }
 
 .community-product-name {

@@ -7,16 +7,21 @@ const DEFAULT_MAIN_HEIGHT = 458;
 const QR_SIZE = 72;
 const PRODUCT_NAME_WIDTH = 247;
 const PRODUCT_LINE_HEIGHT = 22;
-const RECOMMEND_HEIGHT = 31;
-const RECOMMEND_BODY_HEIGHT = 26;
+const RECOMMEND_HEIGHT = 26;
 const MAX_RECOMMEND_CHARS = 25;
-const QR_CENTER_X = 323;
+const OPERATION_BODY_MAX_WIDTH = 256;
+const OPERATION_TEXT_MAX_WIDTH = OPERATION_BODY_MAX_WIDTH - 38;
 const HEADER_LOGO_URL = window.communityLogoDataUrl;
+const OPERATION_ICON_URL = window.communityOperationIconDataUrl;
 const measureContext = document.createElement("canvas").getContext("2d");
 
 const state = {
   price: "25.98",
+  halfPriceEnabled: false,
+  originalPrice: "99.9",
   productName: "飞天小女警 活力绘影立牌 飞天小女警 活力绘影立牌",
+  operationEnabled: false,
+  operationText: "本期新品",
   recommendEnabled: false,
   recommendText: "🔥火爆热卖中，快来抽卡机买同款吧商品购买推荐语",
   mainDataUrl: "",
@@ -26,6 +31,7 @@ const state = {
   qrName: "",
   qrImage: null,
   headerImage: null,
+  operationIconImage: null,
 };
 
 const els = {
@@ -34,12 +40,18 @@ const els = {
   mainName: document.querySelector("#communityMainName"),
   qrInput: document.querySelector("#communityQrInput"),
   qrName: document.querySelector("#communityQrName"),
+  operationEnabled: document.querySelector("#communityOperationEnabled"),
+  operationField: document.querySelector("#communityOperationField"),
+  operationText: document.querySelector("#communityOperationText"),
   price: document.querySelector("#communityPrice"),
+  halfPriceEnabled: document.querySelector("#communityHalfPriceEnabled"),
+  originalPriceField: document.querySelector("#communityOriginalPriceField"),
+  originalPrice: document.querySelector("#communityOriginalPrice"),
   productName: document.querySelector("#communityName"),
   recommendEnabled: document.querySelector("#communityRecommendEnabled"),
   recommendField: document.querySelector("#communityRecommendField"),
   recommendText: document.querySelector("#communityRecommendText"),
-  download: document.querySelector("#downloadCommunityPng"),
+  download: document.querySelector("#downloadCommunityJpg"),
   statusTitle: document.querySelector("#communityStatusTitle"),
   statusDetail: document.querySelector("#communityStatusDetail"),
 };
@@ -58,6 +70,20 @@ function limitCharacters(value, maxLength) {
 
 function displayedRecommendText() {
   return limitCharacters(state.recommendText.trim(), MAX_RECOMMEND_CHARS);
+}
+
+function fitTextWithEllipsis(context, text, maxWidth) {
+  const characters = Array.from(String(text || "").trim());
+  if (context.measureText(characters.join("")).width <= maxWidth) return characters.join("");
+  while (characters.length && context.measureText(`${characters.join("")}…`).width > maxWidth) characters.pop();
+  return characters.length ? `${characters.join("")}…` : "…";
+}
+
+function operationLabel() {
+  measureContext.font = "16px HYFengShangHei75J, PingFang SC, Microsoft YaHei, sans-serif";
+  const text = fitTextWithEllipsis(measureContext, state.operationText, OPERATION_TEXT_MAX_WIDTH);
+  const textWidth = Math.ceil(measureContext.measureText(text).width);
+  return { text, bodyWidth: Math.min(OPERATION_BODY_MAX_WIDTH, textWidth + 38) };
 }
 
 function readAsDataUrl(file) {
@@ -120,62 +146,41 @@ function layout() {
   const hasRecommend = state.recommendEnabled && state.recommendText.trim();
   const productLines = productNameLines();
   const infoHeight = 24 + 12 + productLines.length * PRODUCT_LINE_HEIGHT;
-  const recommendTop = imageBottom - 9;
-  const infoTop = imageBottom + (hasRecommend ? 34 : 24);
-  const qrTop = infoTop + infoHeight / 2 - QR_SIZE / 2;
-  const contentBottom = Math.max(infoTop + infoHeight, qrTop + QR_SIZE) + 24;
+  const contentTop = imageBottom + 24;
+  const groupHeight = Math.max(infoHeight, QR_SIZE);
+  const infoTop = contentTop + (groupHeight - infoHeight) / 2;
+  const qrTop = contentTop + (groupHeight - QR_SIZE) / 2;
+  const groupBottom = contentTop + groupHeight;
+  const recommendTop = groupBottom + 8;
+  const contentBottom = hasRecommend ? recommendTop + RECOMMEND_HEIGHT : groupBottom;
 
   return {
     imageHeight,
     hasRecommend,
     productLines,
     infoHeight,
+    groupHeight,
     recommendTop,
     infoTop,
     qrTop,
-    posterHeight: contentBottom,
+    posterHeight: contentBottom + 24,
   };
 }
 
 function recommendWidth(text) {
   measureContext.font = "500 13px PingFang SC, Microsoft YaHei, sans-serif";
-  return Math.max(72, Math.min(MAIN_WIDTH, Math.ceil(measureContext.measureText(text).width) + 28));
-}
-
-function bubblePath(width, tailX) {
-  const radius = 10;
-  const tailOuter = 6;
-  const tailInner = 4.2;
-  const tipRound = 1.2;
-  return [
-    `M ${radius} 0`,
-    `H ${width - radius}`,
-    `Q ${width} 0 ${width} ${radius}`,
-    `V ${RECOMMEND_BODY_HEIGHT - radius}`,
-    `Q ${width} ${RECOMMEND_BODY_HEIGHT} ${width - radius} ${RECOMMEND_BODY_HEIGHT}`,
-    `H ${tailX + tailOuter}`,
-    `Q ${tailX + 5.1} ${RECOMMEND_BODY_HEIGHT} ${tailX + tailInner} ${RECOMMEND_BODY_HEIGHT + 0.8}`,
-    `L ${tailX + tipRound} ${RECOMMEND_HEIGHT - 1.2}`,
-    `Q ${tailX} ${RECOMMEND_HEIGHT} ${tailX - tipRound} ${RECOMMEND_HEIGHT - 1.2}`,
-    `L ${tailX - tailInner} ${RECOMMEND_BODY_HEIGHT + 0.8}`,
-    `Q ${tailX - 5.1} ${RECOMMEND_BODY_HEIGHT} ${tailX - tailOuter} ${RECOMMEND_BODY_HEIGHT}`,
-    `H ${radius}`,
-    `Q 0 ${RECOMMEND_BODY_HEIGHT} 0 ${RECOMMEND_BODY_HEIGHT - radius}`,
-    `V ${radius}`,
-    `Q 0 0 ${radius} 0`,
-    "Z",
-  ].join(" ");
+  return Math.max(72, Math.min(MAIN_WIDTH, Math.ceil(measureContext.measureText(text).width) + 16));
 }
 
 function setStatus() {
   const hasMain = Boolean(state.mainImage);
   const hasQr = Boolean(state.qrImage);
-  const hasHeader = Boolean(state.headerImage);
+  const hasHeader = Boolean(state.headerImage && state.operationIconImage);
   els.download.disabled = !(hasMain && hasQr && hasHeader);
 
   if (hasMain && hasQr && hasHeader) {
     els.statusTitle.textContent = "可导出";
-    els.statusDetail.textContent = "已按 3 倍图准备导出。";
+    els.statusDetail.textContent = "已按 3 倍 JPG 准备导出。";
     return;
   }
 
@@ -193,39 +198,33 @@ function renderPoster() {
   const currentLayout = layout();
   const recommendText = displayedRecommendText();
   const recommendBoxWidth = recommendWidth(recommendText);
-  const recommendLeft = MAIN_X + MAIN_WIDTH - recommendBoxWidth;
-  const recommendTailX = QR_CENTER_X - recommendLeft;
-  const recommendShape = bubblePath(recommendBoxWidth, recommendTailX);
+  const recommendLeft = MAIN_X;
+  const operation = operationLabel();
 
   els.preview.innerHTML = `
     <div class="community-poster" style="height: ${currentLayout.posterHeight}px">
       <img class="community-logo-image" src="${HEADER_LOGO_URL}" alt="" />
-      <svg class="community-header-icons" viewBox="0 0 69 20" aria-hidden="true">
-        <g class="community-header-icon-rings">
-          <circle cx="10" cy="10" r="9.5" />
-          <circle cx="34.5" cy="10" r="9.5" />
-          <circle cx="59" cy="10" r="9.5" />
-        </g>
-        <path d="M10 3.2 L12 7.2 L16.5 7.9 L13.25 11.1 L14 15.6 L10 13.5 L6 15.6 L6.75 11.1 L3.5 7.9 L8 7.2 Z" />
-        <path d="M34.5 15.4 C32.4 13.5 28.5 10.9 28.5 7.5 C28.5 5.3 30.1 4 32 4 C33.2 4 34 4.7 34.5 5.6 C35 4.7 35.8 4 37 4 C38.9 4 40.5 5.3 40.5 7.5 C40.5 10.9 36.6 13.5 34.5 15.4 Z" />
-        <path d="M60.5 2.8 L54 10.5 H58.3 L57.4 17.2 L64 8.7 H59.8 Z" />
-      </svg>
+      ${state.operationEnabled
+        ? `<div class="community-operation" style="width: ${operation.bodyWidth}px">
+            <img src="${OPERATION_ICON_URL}" alt="" />
+            <span>${escapeHtml(operation.text)}</span>
+          </div>`
+        : ""}
       <div class="community-main-wrap" style="height: ${currentLayout.imageHeight}px">
         ${state.mainDataUrl
           ? `<img src="${state.mainDataUrl}" alt="" />`
           : `<div class="community-main-placeholder">主图预览</div>`}
       </div>
       ${currentLayout.hasRecommend
-        ? `<svg class="community-recommend" style="left: ${recommendLeft}px; top: ${currentLayout.recommendTop}px; width: ${recommendBoxWidth}px" viewBox="0 0 ${recommendBoxWidth} ${RECOMMEND_HEIGHT}" aria-label="${escapeHtml(recommendText)}">
-            <defs><clipPath id="communityRecommendClip"><rect x="8" y="0" width="${recommendBoxWidth - 16}" height="${RECOMMEND_BODY_HEIGHT}" /></clipPath></defs>
-            <path d="${recommendShape}" />
-            <text x="${recommendBoxWidth / 2}" y="${RECOMMEND_BODY_HEIGHT / 2}" dominant-baseline="central" clip-path="url(#communityRecommendClip)">${escapeHtml(recommendText)}</text>
-          </svg>`
+        ? `<div class="community-recommend" style="left: ${recommendLeft}px; top: ${currentLayout.recommendTop}px; width: ${recommendBoxWidth}px">${escapeHtml(recommendText)}</div>`
         : ""}
       <div class="community-info" style="top: ${currentLayout.infoTop}px">
         <div class="community-price">
           <span class="community-price-symbol">¥</span>
           <span class="community-price-value">${escapeHtml(state.price || "0")}</span>
+          ${state.halfPriceEnabled
+            ? `<span class="community-half-price-label">限时半价</span><span class="community-original-price">¥${escapeHtml(state.originalPrice || "0")}</span>`
+            : ""}
         </div>
         <div class="community-product-name">${currentLayout.productLines.map(escapeHtml).join("<br>")}</div>
       </div>
@@ -238,6 +237,10 @@ function renderPoster() {
 
   els.recommendField.hidden = !state.recommendEnabled;
   els.recommendEnabled.checked = state.recommendEnabled;
+  els.operationField.hidden = !state.operationEnabled;
+  els.operationEnabled.checked = state.operationEnabled;
+  els.originalPriceField.hidden = !state.halfPriceEnabled;
+  els.halfPriceEnabled.checked = state.halfPriceEnabled;
   setStatus();
 }
 
@@ -255,23 +258,37 @@ function drawRoundRect(context, x, y, width, height, radius) {
   context.closePath();
 }
 
-function drawHeaderIcons(context) {
-  const orange = "#ff8000";
+function drawOperationLabel(context) {
+  if (!state.operationEnabled || !state.operationIconImage) return;
+  const operation = operationLabel();
+  const bodyLeft = POSTER_WIDTH - 16 - operation.bodyWidth;
+  const angle = (166.76 * Math.PI) / 180;
+  const directionX = Math.sin(angle);
+  const directionY = -Math.cos(angle);
+  const gradientLength = Math.abs(operation.bodyWidth * directionX) + Math.abs(24 * directionY);
+  const centerX = bodyLeft + operation.bodyWidth / 2;
+  const centerY = 28;
+  const gradient = context.createLinearGradient(
+    centerX - (directionX * gradientLength) / 2,
+    centerY - (directionY * gradientLength) / 2,
+    centerX + (directionX * gradientLength) / 2,
+    centerY + (directionY * gradientLength) / 2,
+  );
+  gradient.addColorStop(0, "#ff7b2a");
+  gradient.addColorStop(1, "#ff51cb");
+  context.fillStyle = gradient;
+  drawRoundRect(context, bodyLeft, 16, operation.bodyWidth, 24, 8);
+  context.fill();
+  context.drawImage(state.operationIconImage, bodyLeft - 4, 8, 32, 32);
   context.save();
-  context.translate(290, 20);
-  context.strokeStyle = orange;
-  context.lineWidth = 0.8;
-  [10, 34.5, 59].forEach((centerX) => {
-    context.beginPath();
-    context.arc(centerX, 10, 9.5, 0, Math.PI * 2);
-    context.stroke();
-  });
-  context.fillStyle = orange;
-  [
-    "M10 3.2 L12 7.2 L16.5 7.9 L13.25 11.1 L14 15.6 L10 13.5 L6 15.6 L6.75 11.1 L3.5 7.9 L8 7.2 Z",
-    "M34.5 15.4 C32.4 13.5 28.5 10.9 28.5 7.5 C28.5 5.3 30.1 4 32 4 C33.2 4 34 4.7 34.5 5.6 C35 4.7 35.8 4 37 4 C38.9 4 40.5 5.3 40.5 7.5 C40.5 10.9 36.6 13.5 34.5 15.4 Z",
-    "M60.5 2.8 L54 10.5 H58.3 L57.4 17.2 L64 8.7 H59.8 Z",
-  ].forEach((path) => context.fill(new Path2D(path)));
+  context.beginPath();
+  context.rect(bodyLeft + 30, 16, operation.bodyWidth - 38, 24);
+  context.clip();
+  context.fillStyle = "#fff";
+  context.font = "16px HYFengShangHei75J, PingFang SC, Microsoft YaHei, sans-serif";
+  context.textAlign = "left";
+  context.textBaseline = "middle";
+  context.fillText(operation.text, bodyLeft + 30, 27.5);
   context.restore();
 }
 
@@ -293,7 +310,7 @@ function drawPoster(context, scale = 1) {
 
   if (state.headerImage) {
     context.drawImage(state.headerImage, 16, 16, 67, 24);
-    drawHeaderIcons(context);
+    drawOperationLabel(context);
   }
 
   context.save();
@@ -320,35 +337,64 @@ function drawPoster(context, scale = 1) {
   if (currentLayout.hasRecommend) {
     const text = displayedRecommendText();
     const boxWidth = recommendWidth(text);
-    const boxLeft = MAIN_X + MAIN_WIDTH - boxWidth;
-    const bubble = new Path2D(bubblePath(boxWidth, QR_CENTER_X - boxLeft));
-    context.save();
-    context.translate(boxLeft, currentLayout.recommendTop);
+    const boxLeft = MAIN_X;
     context.fillStyle = "#fff";
-    context.fill(bubble);
+    drawRoundRect(context, boxLeft, currentLayout.recommendTop, boxWidth, RECOMMEND_HEIGHT, 8);
+    context.fill();
     context.strokeStyle = "#ff8000";
     context.lineWidth = 1;
-    context.stroke(bubble);
-    context.restore();
+    context.stroke();
     context.fillStyle = "#ff8000";
     context.font = "500 13px PingFang SC, Microsoft YaHei, sans-serif";
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.save();
     context.beginPath();
-    context.rect(boxLeft + 8, currentLayout.recommendTop, boxWidth - 16, RECOMMEND_BODY_HEIGHT);
+    context.rect(boxLeft + 8, currentLayout.recommendTop, boxWidth - 16, RECOMMEND_HEIGHT);
     context.clip();
-    context.fillText(text, boxLeft + boxWidth / 2, currentLayout.recommendTop + RECOMMEND_BODY_HEIGHT / 2);
+    context.fillText(text, boxLeft + boxWidth / 2, currentLayout.recommendTop + RECOMMEND_HEIGHT / 2);
     context.restore();
   }
 
   context.textAlign = "left";
   context.textBaseline = "alphabetic";
-  context.fillStyle = "#ff5555";
+  context.fillStyle = "#ff0040";
   context.font = "500 18px PingFang SC, Microsoft YaHei, sans-serif";
   context.fillText("¥", 16, currentLayout.infoTop + 22);
   context.font = "900 24px MotoyaCedarW6, Arial Black, PingFang SC, sans-serif";
-  context.fillText(state.price || "0", 30, currentLayout.infoTop + 24);
+  const priceText = state.price || "0";
+  context.fillText(priceText, 30, currentLayout.infoTop + 24);
+
+  if (state.halfPriceEnabled) {
+    const priceRight = 30 + context.measureText(priceText).width;
+    const labelLeft = priceRight + 4;
+    context.fillStyle = "#fff8f8";
+    drawRoundRect(context, labelLeft, currentLayout.infoTop + 4, 60, 20, 6);
+    context.fill();
+    context.strokeStyle = "#ffd4dd";
+    context.lineWidth = 0.5;
+    context.stroke();
+    context.fillStyle = "#ff0040";
+    context.font = "13px PingFang SC, Microsoft YaHei, sans-serif";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText("限时半价", labelLeft + 30, currentLayout.infoTop + 14);
+
+    const originalText = `¥${state.originalPrice || "0"}`;
+    const originalLeft = labelLeft + 64;
+    context.fillStyle = "#999";
+    context.font = "16px PingFang SC, Microsoft YaHei, sans-serif";
+    context.textAlign = "left";
+    context.textBaseline = "alphabetic";
+    context.fillText(originalText, originalLeft, currentLayout.infoTop + 22);
+    const originalWidth = context.measureText(originalText).width;
+    context.strokeStyle = "#999";
+    context.lineWidth = 1;
+    context.beginPath();
+    context.moveTo(originalLeft, currentLayout.infoTop + 14);
+    context.lineTo(originalLeft + originalWidth, currentLayout.infoTop + 14);
+    context.stroke();
+  }
 
   context.fillStyle = "#191919";
   context.font = "14px PingFang SC, Microsoft YaHei, sans-serif";
@@ -393,18 +439,19 @@ function safeFilename(value) {
     .trim() || "社群宣发";
 }
 
-function downloadPng() {
-  if (!state.mainImage || !state.qrImage || !state.headerImage) return;
+function downloadJpg() {
+  if (!state.mainImage || !state.qrImage || !state.headerImage || !state.operationIconImage) return;
   const currentLayout = layout();
   const canvas = document.createElement("canvas");
   canvas.width = POSTER_WIDTH * 3;
   canvas.height = Math.round(currentLayout.posterHeight * 3);
   const context = canvas.getContext("2d");
-  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = "#fff";
+  context.fillRect(0, 0, canvas.width, canvas.height);
   drawPoster(context, 3);
   canvas.toBlob((blob) => {
-    if (blob) downloadBlob(blob, `${safeFilename(state.productName)}-社群宣发.png`);
-  }, "image/png");
+    if (blob) downloadBlob(blob, `${safeFilename(state.productName)}-社群宣发.jpg`);
+  }, "image/jpeg", 0.92);
 }
 
 async function handleMainImage(file) {
@@ -454,6 +501,26 @@ els.price.addEventListener("input", () => {
   renderPoster();
 });
 
+els.operationEnabled.addEventListener("change", () => {
+  state.operationEnabled = els.operationEnabled.checked;
+  renderPoster();
+});
+
+els.operationText.addEventListener("input", () => {
+  state.operationText = els.operationText.value;
+  renderPoster();
+});
+
+els.halfPriceEnabled.addEventListener("change", () => {
+  state.halfPriceEnabled = els.halfPriceEnabled.checked;
+  renderPoster();
+});
+
+els.originalPrice.addEventListener("input", () => {
+  state.originalPrice = els.originalPrice.value;
+  renderPoster();
+});
+
 els.productName.addEventListener("input", () => {
   state.productName = els.productName.value;
   renderPoster();
@@ -471,18 +538,21 @@ els.recommendText.addEventListener("input", () => {
 
 els.download.addEventListener("click", () => {
   try {
-    downloadPng();
+    downloadJpg();
   } catch (error) {
     console.error(error);
-    alert(`下载 PNG 失败：${error.message || "请刷新页面后重试"}`);
+    alert(`下载 JPG 失败：${error.message || "请刷新页面后重试"}`);
   }
 });
 
 renderPoster();
 els.recommendText.value = state.recommendText;
-loadImage(HEADER_LOGO_URL)
-  .then((image) => {
-    state.headerImage = image;
+els.operationText.value = state.operationText;
+els.originalPrice.value = state.originalPrice;
+Promise.all([loadImage(HEADER_LOGO_URL), loadImage(OPERATION_ICON_URL)])
+  .then(([headerImage, operationIconImage]) => {
+    state.headerImage = headerImage;
+    state.operationIconImage = operationIconImage;
     renderPoster();
   })
   .catch((error) => {
@@ -491,4 +561,11 @@ loadImage(HEADER_LOGO_URL)
     els.statusDetail.textContent = "请刷新页面后重试。";
     els.download.disabled = true;
   });
+
+if (document.fonts) {
+  document.fonts
+    .load('16px "HYFengShangHei75J"')
+    .then(() => renderPoster())
+    .catch((error) => console.error("运营标签字体加载失败", error));
+}
 })();

@@ -22,6 +22,12 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "HYFengShangHei75J";
+  src: url("./assets/fonts/HYFengShangHei_75J.ttf") format("truetype");
+  font-display: swap;
+}
+
 * {
   box-sizing: border-box;
 }
