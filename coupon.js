@@ -16,6 +16,10 @@ const templates = {
     title: "商品券",
     defaults: ["", "", ""],
   },
+  newcomer: {
+    title: "新人半价",
+    defaults: ["抽1包", "送1包", "小马宝莉 辉月包 第12弹"],
+  },
 };
 
 const productTags = {
@@ -128,6 +132,35 @@ function truncateChars(value, maxChars) {
   return Array.from(String(value)).slice(0, maxChars).join("");
 }
 
+function newcomerThirdLines(value) {
+  const lines = [];
+  String(value || "")
+    .replace(/\r/g, "")
+    .split("\n")
+    .forEach((manualLine) => {
+      const characters = Array.from(manualLine);
+      if (!characters.length) {
+        lines.push("");
+        return;
+      }
+      let current = "";
+      let visibleCount = 0;
+      characters.forEach((character) => {
+        const isSpace = /\s/.test(character);
+        if (!isSpace && visibleCount >= 12) {
+          lines.push(current.trimEnd());
+          current = "";
+          visibleCount = 0;
+        }
+        if (!current && isSpace) return;
+        current += character;
+        if (!isSpace) visibleCount += 1;
+      });
+      if (current) lines.push(current.trimEnd());
+    });
+  return lines.slice(0, 2);
+}
+
 function visibleLine(index) {
   const limits = {
     cash: [5, 5],
@@ -179,10 +212,14 @@ function fontFaceCss(fonts = null) {
   const fengSrc = fonts?.feng
     ? `url("data:font/ttf;base64,${fonts.feng}") format("truetype")`
     : `url("./assets/fonts/HYFengShangHei_85J.ttf") format("truetype")`;
+  const newcomerSrc = window.COUPON_NEWCOMER_DATA?.font
+    ? `url("data:font/ttf;base64,${window.COUPON_NEWCOMER_DATA.font}") format("truetype")`
+    : `url("./assets/fonts/ZiHunGuanJunTi.ttf") format("truetype")`;
 
   return `
         @font-face { font-family: MotoyaCedarW6; src: ${motoyaSrc}; }
-        @font-face { font-family: HYFengShangHei85J; src: ${fengSrc}; }`;
+        @font-face { font-family: HYFengShangHei85J; src: ${fengSrc}; }
+        @font-face { font-family: ZiHunGuanJunTi; src: ${newcomerSrc}; }`;
 }
 
 function couponShell(innerContent, options = {}) {
@@ -295,10 +332,64 @@ ${fontFaceCss(options.fonts)}
     </svg>`;
 }
 
+function renderNewcomerTemplate(options = {}) {
+  const line1 = truncateChars(state.lines[0], 4);
+  const line2 = truncateChars(state.lines[1], 4);
+  const bottomLines = newcomerThirdLines(state.lines[2]);
+  const background = window.COUPON_NEWCOMER_DATA?.background || "./assets/coupon-newcomer-half-bg.png";
+  const backgroundMask = window.COUPON_NEWCOMER_DATA?.mask || "./assets/coupon-newcomer-half-mask.png";
+  const bottomY = bottomLines.length > 1 ? [327, 353] : [340];
+
+  return `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 375" role="img" aria-label="新人半价优惠券预览" style="background: transparent">
+      <style>
+${fontFaceCss(options.fonts)}
+      </style>
+      <defs>
+        <mask id="newcomer-bg-mask" x="10" y="0" width="335" height="374" maskUnits="userSpaceOnUse" style="mask-type: alpha">
+          <image href="${backgroundMask}" x="10" y="0" width="335" height="374" preserveAspectRatio="none" />
+        </mask>
+        <linearGradient id="newcomer-line2" x1="95" y1="0" x2="279" y2="0" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#ffffff" />
+          <stop offset="0.39423" stop-color="#aaf2ff" />
+          <stop offset="1" stop-color="#cdc0fb" />
+        </linearGradient>
+      </defs>
+      <image href="${background}" x="10" y="0" width="335" height="374" preserveAspectRatio="none" mask="url(#newcomer-bg-mask)" />
+      <g
+        font-family="ZiHunGuanJunTi, sans-serif"
+        font-size="80"
+        font-weight="400"
+        text-anchor="middle"
+        stroke="#26335e"
+        stroke-width="6"
+        stroke-linejoin="round"
+        paint-order="stroke fill"
+      >
+        <text x="187" y="136" fill="#ffffff">${escapeXml(line1)}</text>
+        <text x="187" y="236" fill="url(#newcomer-line2)">${escapeXml(line2)}</text>
+      </g>
+      <g
+        font-family="ZiHunGuanJunTi, sans-serif"
+        font-size="22"
+        font-weight="400"
+        text-anchor="middle"
+        fill="#ffffff"
+        stroke="#26335e"
+        stroke-width="4"
+        stroke-linejoin="round"
+        paint-order="stroke fill"
+      >
+        ${bottomLines.map((line, index) => `<text x="187.5" y="${bottomY[index]}">${escapeXml(line)}</text>`).join("")}
+      </g>
+    </svg>`;
+}
+
 function buildSvg(options = {}) {
   if (state.template === "cash") return renderCashTemplate(options);
   if (state.template === "free") return renderFreeTemplate(options);
   if (state.template === "product") return renderProductTemplate(options);
+  if (state.template === "newcomer") return renderNewcomerTemplate(options);
   return renderBoxTemplate(options);
 }
 
