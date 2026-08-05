@@ -679,28 +679,53 @@
     buildPicker(els.productSlots, 6, (index) => { state.productSlot = index; render(); });
     bindEvents();
     render();
-    try {
-      const assets = window.MEMBER_CENTER_ASSETS || {};
-      const productAssets = window.MEMBER_CENTER_PRODUCT_ASSETS || {};
-      [state.backgrounds[1], state.backgrounds[2], state.backgrounds[3], state.backgrounds[4], state.backgrounds[5], state.backgrounds["6-1"], state.backgrounds["6-2"], state.chevron] = await Promise.all([
-        loadImage(assets.background),
-        loadImage(productAssets.module2),
-        loadImage(productAssets.module3),
-        loadImage(productAssets.module4),
-        loadImage(productAssets.module5),
-        loadImage(productAssets.module61),
-        loadImage(productAssets.module62),
-        loadImage(assets.chevron),
-      ]);
-      await Promise.all([
-        document.fonts.load(`700 14px ${fontFamily}`),
-        document.fonts.load(`700 56px ${motoyaFamily}`),
-      ]);
-      render();
-    } catch (error) {
-      els.validation.textContent = `模板素材读取失败：${error.message}`;
+    const assets = window.MEMBER_CENTER_ASSETS || {};
+    const productAssets = window.MEMBER_CENTER_PRODUCT_ASSETS || {};
+    const imageEntries = [
+      [1, assets.background],
+      [2, productAssets.module2],
+      [3, productAssets.module3],
+      [4, productAssets.module4],
+      [5, productAssets.module5],
+      ["6-1", productAssets.module61],
+      ["6-2", productAssets.module62],
+      ["chevron", assets.chevron],
+    ];
+
+    const imageResults = await Promise.allSettled(
+      imageEntries.map(([, src]) => loadImage(src))
+    );
+
+    const failedImages = [];
+    imageResults.forEach((result, index) => {
+      const [key] = imageEntries[index];
+      if (result.status === "fulfilled") {
+        if (key === "chevron") {
+          state.chevron = result.value;
+        } else {
+          state.backgrounds[key] = result.value;
+        }
+      } else {
+        failedImages.push(String(key));
+      }
+    });
+
+    // Paint as soon as images are available. Font loading must never leave a
+    // successfully loaded background stuck behind the initial blank render.
+    render();
+
+    await Promise.allSettled([
+      document.fonts.load(`700 14px ${fontFamily}`),
+      document.fonts.load(`700 56px ${motoyaFamily}`),
+    ]);
+    render();
+
+    if (!currentBackground()) {
+      els.validation.textContent = "当前模块模板素材读取失败，请刷新后重试。";
       els.validation.classList.add("error");
       els.status.textContent = "模板素材读取失败";
+    } else if (failedImages.length) {
+      console.warn(`部分会员中心素材读取失败：${failedImages.join("、")}`);
     }
   }
 
