@@ -5,6 +5,48 @@
   --admin-muted: #95a3af;
 }
 
+@font-face {
+  font-family: "SourceHanSansCN";
+  src: url("./assets/fonts/SourceHanSansCN-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SourceHanSansCN";
+  src: url("./assets/fonts/SourceHanSansCN-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SourceHanSansCN";
+  src: url("./assets/fonts/SourceHanSansCN-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SourceHanSansCN";
+  src: url("./assets/fonts/SourceHanSansCN-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SourceHanSansCN";
+  src: url("./assets/fonts/SourceHanSansCN-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SourceHanSansCN";
+  src: url("./assets/fonts/SourceHanSansCN-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-display: swap;
+}
+
 body {
   background: #f3f5f7;
 }
@@ -684,6 +726,107 @@ body {
 
 .ecommerce-slot-picker.five {
   grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.ecommerce-slot-picker.three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.member-module-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.member-module-grid .template-card {
+  min-height: 58px;
+  padding: 9px;
+  align-items: center;
+  text-align: center;
+}
+
+.member-module-grid .template-card:disabled {
+  border-color: var(--line);
+  color: #9aa3aa;
+  background: #f1f3f5;
+  cursor: not-allowed;
+}
+
+#memberInvitePointsField[hidden],
+#memberInviteImageField[hidden],
+#memberProductPointsField[hidden],
+#memberProductNameField[hidden],
+#memberProductButtonField[hidden],
+#memberSixCopyField[hidden],
+#memberSixThirdField[hidden],
+[data-member-editor="6"][hidden] {
+  display: none;
+}
+
+.member-invite-toggle {
+  margin-bottom: 20px;
+}
+
+.member-six-switch-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.member-six-switch-row > span:last-child {
+  text-align: right;
+}
+
+.member-six-switch {
+  position: relative;
+  display: block;
+  width: 44px;
+  height: 24px;
+}
+
+.member-six-switch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.member-six-switch i {
+  position: absolute;
+  inset: 0;
+  border: 1px solid #c6cdd2;
+  border-radius: 12px;
+  background: #e8ecef;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.member-six-switch i::after {
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(20, 30, 36, 0.24);
+  content: "";
+  transition: transform 160ms ease;
+}
+
+.member-six-switch input:checked + i {
+  border-color: var(--yellow-dark);
+  background: var(--yellow);
+}
+
+.member-six-switch input:checked + i::after {
+  transform: translateX(20px);
+}
+
+.member-six-switch input:focus-visible + i {
+  outline: 2px solid #1b6fff;
+  outline-offset: 2px;
 }
 
 .ecommerce-slot-picker button {

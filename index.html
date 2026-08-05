@@ -48,6 +48,10 @@
             <span>电商会员日</span>
             <small>会员日宣发模版</small>
           </button>
+          <button class="admin-nav-item" type="button" data-page="member-center">
+            <span>电商会员中心</span>
+            <small>会员中心宣发模版</small>
+          </button>
         </nav>
       </aside>
 
@@ -546,6 +550,149 @@
             </section>
           </div>
         </section>
+
+        <section id="memberCenterPage" class="admin-page" data-page-panel="member-center">
+          <div class="admin-header">
+            <div>
+              <strong>电商会员中心</strong>
+              <span>编辑会员中心六个模块。</span>
+            </div>
+          </div>
+
+          <div class="admin-tool-grid ecommerce-admin-grid">
+            <aside class="coupon-sidebar embedded ecommerce-sidebar">
+              <section class="coupon-panel">
+                <h2>模块</h2>
+                <div class="template-grid member-module-grid" role="radiogroup" aria-label="选择电商会员中心模块">
+                  <button class="template-card active" type="button" data-member-module="1"><span>模块 1</span></button>
+                  <button class="template-card" type="button" data-member-module="2"><span>模块 2</span></button>
+                  <button class="template-card" type="button" data-member-module="3"><span>模块 3</span></button>
+                  <button class="template-card" type="button" data-member-module="4"><span>模块 4</span></button>
+                  <button class="template-card" type="button" data-member-module="5"><span>模块 5</span></button>
+                  <button class="template-card" type="button" data-member-module="6"><span>模块 6</span></button>
+                </div>
+              </section>
+
+              <section class="coupon-panel" data-member-editor="1">
+                <h2>邀请奖励</h2>
+                <div id="memberInviteSlots" class="ecommerce-slot-picker three" role="radiogroup" aria-label="选择邀请奖励坑位"></div>
+                <label class="field">
+                  <span>前两行文案</span>
+                  <textarea id="memberInviteCopy" rows="2"></textarea>
+                </label>
+                <label class="field">
+                  <span>每个 ID 限制</span>
+                  <input id="memberInviteLimit" type="text" />
+                </label>
+                <label class="community-toggle member-invite-toggle">
+                  <input id="memberInvitePointsMode" type="checkbox" />
+                  <span>切换为积分奖励</span>
+                </label>
+                <label id="memberInviteImageField" class="file-drop compact ecommerce-file-drop">
+                  <input id="memberInviteImage" type="file" accept="image/png,image/jpeg,image/webp" />
+                  <span>选择奖品图片</span>
+                  <small id="memberInviteImageName">未选择</small>
+                </label>
+                <label id="memberInvitePointsField" class="field" hidden>
+                  <span>积分（最多展示 3 个字符）</span>
+                  <input id="memberInvitePoints" type="text" inputmode="numeric" value="20" />
+                </label>
+              </section>
+
+              <section class="coupon-panel" data-member-editor="1">
+                <h2>评价积分</h2>
+                <label class="field"><span>第一行</span><input id="memberReviewLine1" type="text" value="评价1次得" /></label>
+                <label class="field"><span>第二行</span><input id="memberReviewLine2" type="text" value="50积分" /></label>
+              </section>
+
+              <section class="coupon-panel" data-member-editor="1">
+                <h2>积分攻略</h2>
+                <div id="memberTaskSlots" class="ecommerce-slot-picker" role="radiogroup" aria-label="选择积分任务坑位"></div>
+                <label class="field">
+                  <span>两行文案</span>
+                  <textarea id="memberTaskCopy" rows="2"></textarea>
+                </label>
+                <label class="community-toggle">
+                  <input id="memberTaskArrow" type="checkbox" checked />
+                  <span>显示末尾箭头</span>
+                </label>
+              </section>
+
+              <section class="coupon-panel" data-member-editor="products" hidden>
+                <h2>商品坑位</h2>
+                <div id="memberProductSlots" class="ecommerce-slot-picker" role="radiogroup" aria-label="选择商品坑位"></div>
+                <label class="file-drop compact ecommerce-file-drop">
+                  <input id="memberProductImage" type="file" accept="image/png,image/jpeg,image/webp" />
+                  <span>选择商品图片</span>
+                  <small id="memberProductImageName">未选择</small>
+                </label>
+                <label id="memberProductNameField" class="field">
+                  <span>商品名称（最大字号 9.5）</span>
+                  <input id="memberProductName" type="text" />
+                </label>
+                <label id="memberProductPointsField" class="field">
+                  <span>积分</span>
+                  <input id="memberProductPoints" type="text" inputmode="numeric" />
+                </label>
+                <label id="memberProductButtonField" class="field" hidden>
+                  <span>按钮文案</span>
+                  <input id="memberProductButtonText" type="text" value="立即领取" />
+                </label>
+              </section>
+
+              <section class="coupon-panel" data-member-editor="6" hidden>
+                <h2>模式</h2>
+                <div class="member-six-switch-row">
+                  <span>可编辑文案</span>
+                  <label class="member-six-switch">
+                    <input id="memberSixStyleToggle" type="checkbox" aria-label="切换为纯图片模式" />
+                    <i aria-hidden="true"></i>
+                  </label>
+                  <span>纯图片</span>
+                </div>
+              </section>
+
+              <section class="coupon-panel" data-member-editor="6" hidden>
+                <h2>图片与文字</h2>
+                <label class="file-drop compact ecommerce-file-drop">
+                  <input id="memberSixImage" type="file" accept="image/png,image/jpeg,image/webp" />
+                  <span>选择商品图片</span>
+                  <small id="memberSixImageName">未选择</small>
+                </label>
+                <label id="memberSixCopyField" class="field">
+                  <span>第一、二行文案</span>
+                  <textarea id="memberSixCopy" rows="2"></textarea>
+                </label>
+                <label id="memberSixThirdField" class="field">
+                  <span>第三行文案</span>
+                  <input id="memberSixThird" type="text" />
+                </label>
+                <label class="field">
+                  <span>底部标题</span>
+                  <input id="memberSixTitle" type="text" />
+                </label>
+              </section>
+
+              <section class="coupon-panel">
+                <h2>导出</h2>
+                <p id="memberCenterValidation" class="ecommerce-validation"></p>
+                <div class="action-row">
+                  <button id="downloadMemberCenter" type="button">下载 PNG</button>
+                </div>
+              </section>
+            </aside>
+
+            <section class="coupon-workspace embedded">
+              <div class="coupon-toolbar">
+                <strong id="memberCenterTitle">模块 1</strong>
+                <span id="memberCenterStatus">实时预览</span>
+              </div>
+              <div class="ecommerce-stage">
+                <canvas id="memberCenterPreview" class="ecommerce-preview" aria-label="电商会员中心模块 1 预览"></canvas>
+              </div>
+            </section>
+          </div>
+        </section>
       </section>
     </main>
 
@@ -561,6 +708,9 @@
     <script src="./community.js"></script>
     <script src="./ecommerce-assets.js"></script>
     <script src="./ecommerce.js"></script>
+    <script src="./member-center-assets.js"></script>
+    <script src="./member-center-product-assets.js"></script>
+    <script src="./member-center.js"></script>
     <script src="./dashboard.js"></script>
   </body>
 </html>

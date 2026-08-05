@@ -60,7 +60,7 @@ const els = {
   productImageName: document.querySelector("#productImageName"),
   productTagButtons: Array.from(document.querySelectorAll("[data-product-tag]")),
   downloadPng: document.querySelector("#downloadPng"),
-  templateButtons: Array.from(document.querySelectorAll(".template-card")),
+  templateButtons: Array.from(document.querySelectorAll("#couponPage .template-card")),
 };
 
 function escapeXml(value) {
