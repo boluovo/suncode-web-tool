@@ -1,16 +1,20 @@
 (() => {
 const templates = {
   cash: {
-    title: "折扣券",
-    defaults: ["8折", "单抽券", "小马宝莉 双面糖果徽章"],
+    title: "满减券",
+    defaults: ["¥10", "满100元可用", "优惠券名称优惠券"],
   },
-  free: {
-    title: "免费券",
-    defaults: ["免费", "单抽券", "剑网3 山海同心典藏卡\n侠行包 第3弹"],
+  discount: {
+    title: "折扣券",
+    defaults: ["5折", "单抽券", "优惠券名称优惠券"],
+  },
+  ticket: {
+    title: "门票券",
+    defaults: ["¥10", "免费抽", "优惠券名称优惠券名称优惠券名称"],
   },
   box: {
     title: "买赠券",
-    defaults: ["端1盒", "送1盒", "剑网3 山海同心典藏卡\n侠行包 第3弹"],
+    defaults: ["抽1包", "送1包", "优惠券名称优惠券"],
   },
   product: {
     title: "商品券",
@@ -115,11 +119,16 @@ function wrapTextToWidth(value, maxWidth, fontSize, maxLines) {
 
   const visibleLines = lines.slice(0, maxLines);
   let last = visibleLines[maxLines - 1];
-  while (last.length > 0 && textWidthScore(`${last}...`) > maxScore) {
+  while (last.length > 0 && textWidthScore(`${last}…`) > maxScore) {
     last = Array.from(last).slice(0, -1).join("");
   }
-  visibleLines[maxLines - 1] = `${last}...`;
+  visibleLines[maxLines - 1] = `${last}…`;
   return visibleLines;
+}
+
+function fitSingleLineFontSize(value, baseSize, maxWidth, minSize = 20) {
+  const score = Math.max(textWidthScore(String(value)), 1);
+  return Math.max(minSize, Math.min(baseSize, maxWidth / score));
 }
 
 function fitFontSize(text, baseSize, maxChars) {
@@ -163,9 +172,10 @@ function newcomerThirdLines(value) {
 
 function visibleLine(index) {
   const limits = {
-    cash: [5, 5],
-    free: [2, 5],
-    box: [4, 4],
+    cash: [4],
+    discount: [4],
+    ticket: [4],
+    box: [4],
   };
   const limit = limits[state.template]?.[index];
   if (!limit) return state.lines[index];
@@ -255,34 +265,54 @@ function renderCashTemplate(options = {}) {
   const line1 = visibleLine(0);
   const line2 = visibleLine(1);
   const line3 = state.lines[2];
-  const titleMainLength = Math.max(Array.from(line1).length - 1, 1);
-  const titleSize = fitFontSize("字".repeat(titleMainLength), 120, 4);
+  const line1Size = fitSingleLineFontSize(line1, 100, 235, 58);
+  const line2Size = fitSingleLineFontSize(line2, 40, 249, 10);
   const bottomLines = splitLines(line3 || templates.cash.defaults[2]);
 
   return couponShell(`
-    ${renderDiscountLine(line1, 187.5, 155, titleSize)}
-    <text x="187.5" y="224" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="48" font-weight="750" fill="#191919">${escapeXml(line2)}</text>
+    <text x="187.5" y="142" text-anchor="middle" font-family="MotoyaCedarW6, PingFang SC, sans-serif" font-size="${line1Size}" font-weight="900" fill="#191919">${escapeXml(line1)}</text>
+    <text x="187.5" y="218" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="${line2Size}" font-weight="400" fill="#191919">${escapeXml(line2)}</text>
     ${textBlock(bottomLines, 187.5, bottomLines.length > 1 ? 318 : 333, {
       size: 22,
-      color: "#4d4d4d",
+      color: "#191919",
       lineHeight: 30,
     })}
   `, options);
 }
 
-function renderFreeTemplate(options = {}) {
+function renderDiscountTemplate(options = {}) {
   const line1 = visibleLine(0);
   const line2 = visibleLine(1);
   const line3 = state.lines[2];
-  const line1Size = fitFontSize(line1, 100, 2);
-  const bottomLines = splitLines(line3 || templates.free.defaults[2]);
+  const line1Size = fitSingleLineFontSize(line1, 100, 235, 58);
+  const line2Size = fitSingleLineFontSize(line2, 40, 249, 10);
+  const bottomLines = splitLines(line3 || templates.discount.defaults[2]);
 
   return couponShell(`
-    <text x="187.5" y="155" text-anchor="middle" font-family="HYFengShangHei85J, sans-serif" font-size="${line1Size}" font-weight="900" fill="#191919">${escapeXml(line1)}</text>
-    <text x="187.5" y="230" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="48" font-weight="750" fill="#191919">${escapeXml(line2)}</text>
+    ${renderDiscountLine(line1, 187.5, 142, line1Size)}
+    <text x="187.5" y="218" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="${line2Size}" font-weight="400" fill="#191919">${escapeXml(line2)}</text>
     ${textBlock(bottomLines, 187.5, bottomLines.length > 1 ? 318 : 333, {
       size: 22,
-      color: "#4d4d4d",
+      color: "#191919",
+      lineHeight: 30,
+    })}
+  `, options);
+}
+
+function renderTicketTemplate(options = {}) {
+  const line1 = visibleLine(0);
+  const line2 = visibleLine(1);
+  const line3 = state.lines[2];
+  const line1Size = fitSingleLineFontSize(line1, 100, 235, 58);
+  const line2Size = fitSingleLineFontSize(line2, 40, 249, 10);
+  const bottomLines = splitLines(line3 || templates.ticket.defaults[2]);
+
+  return couponShell(`
+    <text x="187.5" y="142" text-anchor="middle" font-family="MotoyaCedarW6, PingFang SC, sans-serif" font-size="${line1Size}" font-weight="900" fill="#191919">${escapeXml(line1)}</text>
+    <text x="187.5" y="218" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="${line2Size}" font-weight="400" fill="#191919">${escapeXml(line2)}</text>
+    ${textBlock(bottomLines, 187.5, bottomLines.length > 1 ? 318 : 333, {
+      size: 22,
+      color: "#191919",
       lineHeight: 30,
     })}
   `, options);
@@ -293,14 +323,15 @@ function renderBoxTemplate(options = {}) {
   const line2 = visibleLine(1);
   const line3 = state.lines[2];
   const line1Size = fitFontSize(line1, 72, 4);
+  const line2Size = fitSingleLineFontSize(line2, 72, 249, 10);
   const bottomLines = splitLines(line3 || templates.box.defaults[2]);
 
   return couponShell(`
     <text x="187.5" y="130" text-anchor="middle" font-family="HYFengShangHei85J, sans-serif" font-size="${line1Size}" font-weight="900" fill="#191919">${escapeXml(line1)}</text>
-    <text x="187.5" y="210" text-anchor="middle" font-family="HYFengShangHei85J, sans-serif" font-size="72" font-weight="900" fill="#191919">${escapeXml(line2)}</text>
+    <text x="187.5" y="210" text-anchor="middle" font-family="HYFengShangHei85J, sans-serif" font-size="${line2Size}" font-weight="900" fill="#191919">${escapeXml(line2)}</text>
     ${textBlock(bottomLines, 187.5, bottomLines.length > 1 ? 318 : 333, {
       size: 22,
-      color: "#4d4d4d",
+      color: "#191919",
       lineHeight: 30,
     })}
   `, options);
@@ -387,7 +418,8 @@ ${fontFaceCss(options.fonts)}
 
 function buildSvg(options = {}) {
   if (state.template === "cash") return renderCashTemplate(options);
-  if (state.template === "free") return renderFreeTemplate(options);
+  if (state.template === "discount") return renderDiscountTemplate(options);
+  if (state.template === "ticket") return renderTicketTemplate(options);
   if (state.template === "product") return renderProductTemplate(options);
   if (state.template === "newcomer") return renderNewcomerTemplate(options);
   return renderBoxTemplate(options);

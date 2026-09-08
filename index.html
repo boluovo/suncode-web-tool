@@ -22,7 +22,7 @@
         <nav class="admin-nav" aria-label="工具菜单">
           <button class="admin-nav-item active" type="button" data-page="coupon">
             <span>优惠券编辑器</span>
-            <small>五种模板，三行文字</small>
+            <small>六种模板，三行文字</small>
           </button>
           <button class="admin-nav-item" type="button" data-page="luck">
             <span>试手气模版</span>
@@ -52,6 +52,10 @@
             <span>电商会员中心</span>
             <small>会员中心宣发模版</small>
           </button>
+          <button class="admin-nav-item" type="button" data-page="tribe-atlas">
+            <span>部落图鉴</span>
+            <small>金银等级标签</small>
+          </button>
         </nav>
       </aside>
 
@@ -70,10 +74,13 @@
                 <h2>模板</h2>
                 <div class="template-grid" role="radiogroup" aria-label="选择优惠券模板">
                   <button class="template-card active" type="button" data-template="cash">
+                    <span>满减券</span>
+                  </button>
+                  <button class="template-card" type="button" data-template="discount">
                     <span>折扣券</span>
                   </button>
-                  <button class="template-card" type="button" data-template="free">
-                    <span>免费券</span>
+                  <button class="template-card" type="button" data-template="ticket">
+                    <span>门票券</span>
                   </button>
                   <button class="template-card" type="button" data-template="box">
                     <span>买赠券</span>
@@ -123,7 +130,7 @@
 
             <section class="coupon-workspace embedded">
               <div class="coupon-toolbar">
-                <strong id="templateTitle">折扣券</strong>
+                <strong id="templateTitle">满减券</strong>
                 <div id="productTagPicker" class="tag-picker toolbar-tag-picker" role="radiogroup" aria-label="选择商品券标签" hidden>
                   <button class="tag-option active" type="button" data-product-tag="exchange">兑换券</button>
                   <button class="tag-option" type="button" data-product-tag="single">单抽券</button>
@@ -693,6 +700,52 @@
             </section>
           </div>
         </section>
+
+        <section id="tribeAtlasPage" class="admin-page" data-page-panel="tribe-atlas">
+          <div class="admin-header">
+            <div>
+              <strong>部落图鉴</strong>
+              <span>输入文案，生成金色或银色等级标签。</span>
+            </div>
+          </div>
+
+          <div class="admin-tool-grid coupon-admin-grid">
+            <aside class="coupon-sidebar embedded">
+              <section class="coupon-panel">
+                <h2>版本</h2>
+                <div class="template-grid" role="radiogroup" aria-label="选择等级标签版本">
+                  <button class="template-card active" type="button" data-atlas-style="silver"><span>银色</span></button>
+                  <button class="template-card" type="button" data-atlas-style="gold"><span>金色</span></button>
+                </div>
+              </section>
+
+              <section class="coupon-panel">
+                <h2>标签文字</h2>
+                <label class="field">
+                  <span>文案</span>
+                  <input id="tribeAtlasText" type="text" value="方寸卡" />
+                </label>
+              </section>
+
+              <section class="coupon-panel">
+                <h2>导出</h2>
+                <div class="action-row">
+                  <button id="downloadTribeAtlas" type="button">下载 PNG</button>
+                </div>
+              </section>
+            </aside>
+
+            <section class="coupon-workspace embedded">
+              <div class="coupon-toolbar">
+                <strong id="tribeAtlasTitle">银色标签</strong>
+                <span>138 × 38 px</span>
+              </div>
+              <div class="tribe-atlas-stage">
+                <canvas id="tribeAtlasPreview" class="tribe-atlas-preview" aria-label="部落图鉴等级标签预览"></canvas>
+              </div>
+            </section>
+          </div>
+        </section>
       </section>
     </main>
 
@@ -711,6 +764,7 @@
     <script src="./member-center-assets.js"></script>
     <script src="./member-center-product-assets.js"></script>
     <script src="./member-center.js"></script>
+    <script src="./tribe-atlas.js"></script>
     <script src="./dashboard.js"></script>
   </body>
 </html>
