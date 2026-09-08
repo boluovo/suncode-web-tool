@@ -85,6 +85,9 @@
                   <button class="template-card" type="button" data-template="box">
                     <span>买赠券</span>
                   </button>
+                  <button class="template-card" type="button" data-template="draw">
+                    <span>抽卡券</span>
+                  </button>
                   <button class="template-card" type="button" data-template="product">
                     <span>商品券</span>
                   </button>
@@ -104,9 +107,34 @@
                   <span>第二行</span>
                   <input id="line2" type="text" />
                 </label>
-                <label class="field">
+                <label id="thirdLineToggleRow" class="coupon-third-toggle">
+                  <input id="showThirdLine" type="checkbox" checked />
+                  <span>显示第三行</span>
+                </label>
+                <label id="thirdLineField" class="field">
                   <span>第三行</span>
                   <textarea id="line3" rows="3"></textarea>
+                </label>
+              </section>
+
+              <section id="couponDrawPanel" class="coupon-panel" hidden>
+                <h2>面值</h2>
+                <div class="draw-amount-picker" role="radiogroup" aria-label="选择抽卡券面值">
+                  <button class="tag-option active" type="button" data-draw-amount="none">无金额</button>
+                  <button class="tag-option" type="button" data-draw-amount="20">20</button>
+                  <button class="tag-option" type="button" data-draw-amount="10">10</button>
+                  <button class="tag-option" type="button" data-draw-amount="5">5</button>
+                  <button class="tag-option" type="button" data-draw-amount="2">2</button>
+                  <button class="tag-option" type="button" data-draw-amount="1">1</button>
+                  <button class="tag-option" type="button" data-draw-amount="custom">自定义</button>
+                </div>
+                <label id="drawCustomAmountField" class="field" hidden>
+                  <span>自定义金额</span>
+                  <input id="drawCustomAmount" type="text" value="30" inputmode="decimal" />
+                </label>
+                <label class="coupon-third-toggle">
+                  <input id="drawRestricted" type="checkbox" />
+                  <span>限非新品</span>
                 </label>
               </section>
 
@@ -752,6 +780,8 @@
 
     <script src="./coupon-fonts.js"></script>
     <script src="./coupon-newcomer-data.js"></script>
+    <script src="./coupon-frame-data.js"></script>
+    <script src="./draw-coupon-data.js"></script>
     <script src="./coupon-product-tag-data.js"></script>
     <script src="./coupon.js"></script>
     <script src="./app.js"></script>

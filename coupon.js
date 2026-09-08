@@ -16,6 +16,10 @@ const templates = {
     title: "买赠券",
     defaults: ["抽1包", "送1包", "优惠券名称优惠券"],
   },
+  draw: {
+    title: "抽卡券",
+    defaults: ["", "", ""],
+  },
   product: {
     title: "商品券",
     defaults: ["", "", ""],
@@ -55,6 +59,10 @@ const state = {
   productImageName: "",
   productTag: "exchange",
   productTagDataUrls: window.COUPON_PRODUCT_TAG_DATA || null,
+  showThirdLine: true,
+  drawAmount: "none",
+  drawCustomAmount: "30",
+  drawRestricted: false,
 };
 
 const els = {
@@ -62,13 +70,21 @@ const els = {
   couponPreview: document.querySelector("#couponPreview"),
   textPanel: document.querySelector("#couponTextPanel"),
   productPanel: document.querySelector("#couponProductPanel"),
+  drawPanel: document.querySelector("#couponDrawPanel"),
   productTagPicker: document.querySelector("#productTagPicker"),
   line1: document.querySelector("#line1"),
   line2: document.querySelector("#line2"),
   line3: document.querySelector("#line3"),
+  showThirdLine: document.querySelector("#showThirdLine"),
+  thirdLineToggleRow: document.querySelector("#thirdLineToggleRow"),
+  thirdLineField: document.querySelector("#thirdLineField"),
   productImageInput: document.querySelector("#productImageInput"),
   productImageName: document.querySelector("#productImageName"),
   productTagButtons: Array.from(document.querySelectorAll("[data-product-tag]")),
+  drawAmountButtons: Array.from(document.querySelectorAll("[data-draw-amount]")),
+  drawCustomAmountField: document.querySelector("#drawCustomAmountField"),
+  drawCustomAmount: document.querySelector("#drawCustomAmount"),
+  drawRestricted: document.querySelector("#drawRestricted"),
   downloadPng: document.querySelector("#downloadPng"),
   templateButtons: Array.from(document.querySelectorAll("#couponPage .template-card")),
 };
@@ -82,7 +98,7 @@ function escapeXml(value) {
 }
 
 function splitLines(value) {
-  return wrapTextToWidth(String(value), 249, 22, 2);
+  return wrapTextToWidth(String(value), 337.5, 30, 2);
 }
 
 function textWidthScore(text) {
@@ -177,21 +193,14 @@ function newcomerThirdLines(value) {
 }
 
 function visibleLine(index) {
-  const limits = {
-    cash: [4],
-    discount: [4],
-    ticket: [4],
-    box: [4],
-  };
-  const limit = limits[state.template]?.[index];
-  if (!limit) return state.lines[index];
-  return truncateChars(state.lines[index], limit);
+  return state.lines[index];
 }
 
 function renderDiscountLine(value, x, y, baseSize) {
   const chars = Array.from(value);
   const unit = chars.length > 1 ? chars.pop() : "";
   const main = chars.join("") || value;
+  const unitSize = 61.875 * (baseSize / 97.5);
 
   if (!unit) {
     return `<text x="${x}" y="${y}" text-anchor="middle" font-family="MotoyaCedarW6, sans-serif" font-size="${baseSize}" font-weight="900" fill="#191919" letter-spacing="-2">${escapeXml(main)}</text>`;
@@ -200,7 +209,7 @@ function renderDiscountLine(value, x, y, baseSize) {
   return `
     <text x="${x}" y="${y}" text-anchor="middle" font-weight="900" fill="#191919">
       <tspan font-family="MotoyaCedarW6, sans-serif" font-size="${baseSize}" letter-spacing="-2">${escapeXml(main)}</tspan>
-      <tspan font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="48" letter-spacing="0">${escapeXml(unit)}</tspan>
+      <tspan font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="${unitSize}" letter-spacing="0">${escapeXml(unit)}</tspan>
     </text>`;
 }
 
@@ -239,50 +248,55 @@ function fontFaceCss(fonts = null) {
 }
 
 function couponShell(innerContent, options = {}) {
-  const { topRightRadius = 16 } = options;
-  const ticketPath =
-    "M64 3 H311 Q327 3 327 19 V283 C320 283 314.5 288.6 314.5 295.5 C314.5 302.4 320 308 327 308 V357.5 Q327 373.5 311 373.5 H64 Q48 373.5 48 357.5 V308 C55 308 60.5 302.4 60.5 295.5 C60.5 288.6 55 283 48 283 V19 Q48 3 64 3 Z";
-  const innerPath =
-    topRightRadius > 20
-      ? "M74 13 H197 Q317 13 317 133 V261 Q317 277 301 277 H74 Q58 277 58 261 V29 Q58 13 74 13 Z"
-      : "M74 13 H301 Q317 13 317 29 V261 Q317 277 301 277 H74 Q58 277 58 261 V29 Q58 13 74 13 Z";
+  const frame = window.COUPON_FRAME_DATA || "./assets/coupon-frame-cash.svg";
 
   return `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 375" role="img" aria-label="优惠券预览">
       <style>
 ${fontFaceCss(options.fonts)}
       </style>
-      <defs>
-        <linearGradient id="ticket-bg" x1="187.5" y1="3" x2="187.5" y2="373.5" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stop-color="#ffffff" />
-          <stop offset="0.62" stop-color="#ffffff" />
-          <stop offset="1" stop-color="#fff5c9" />
-        </linearGradient>
-      </defs>
-      <g>
-        <path d="${ticketPath}" fill="url(#ticket-bg)" stroke="#ffce00" stroke-width="2" />
-        <path d="${innerPath}" fill="#ffffff" stroke="#fff7cc" stroke-width="2" />
-      </g>
+      <image href="${frame}" x="0" y="0" width="375" height="375" preserveAspectRatio="none" />
       ${innerContent}
     </svg>`;
+}
+
+function renderCashLine(value, x, y, baseSize) {
+  const text = String(value);
+  const hasCurrency = text.startsWith("¥");
+  const amount = hasCurrency ? text.slice(1) : text;
+  const currencySize = 61.875 * (baseSize / 97.5);
+  if (!hasCurrency) {
+    return `<text x="${x}" y="${y}" text-anchor="middle" font-family="MotoyaCedarW6, sans-serif" font-size="${baseSize}" font-weight="900" fill="#191919">${escapeXml(amount)}</text>`;
+  }
+  return `<text x="${x}" y="${y}" text-anchor="middle" font-weight="900" fill="#191919"><tspan font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="${currencySize}">¥</tspan><tspan font-family="MotoyaCedarW6, sans-serif" font-size="${baseSize}">${escapeXml(amount)}</tspan></text>`;
+}
+
+function renderCouponFooter(bottomLines) {
+  if (!state.showThirdLine) {
+    const logo = window.COUPON_LOGO_DATA || "./assets/kayou-coupon-logo.svg";
+    return `<image href="${logo}" x="123.75" y="305.625" width="127.5" height="30" preserveAspectRatio="xMidYMid meet" />`;
+  }
+
+  return textBlock(bottomLines, 187.5, bottomLines.length > 1 ? 314 : 329, {
+    size: 30,
+    color: "#666666",
+    weight: 300,
+    lineHeight: 39,
+  });
 }
 
 function renderCashTemplate(options = {}) {
   const line1 = visibleLine(0);
   const line2 = visibleLine(1);
   const line3 = state.lines[2];
-  const line1Size = fitSingleLineFontSize(line1, 100, 235, 58);
-  const line2Size = fitSingleLineFontSize(line2, 40, 249, 10);
+  const line1Size = fitSingleLineFontSize(line1, 97.5, 336, 10);
+  const line2Size = fitSingleLineFontSize(line2, 41.25, 336, 10);
   const bottomLines = splitLines(line3 || templates.cash.defaults[2]);
 
   return couponShell(`
-    <text x="187.5" y="142" text-anchor="middle" font-family="MotoyaCedarW6, PingFang SC, sans-serif" font-size="${line1Size}" font-weight="900" fill="#191919">${escapeXml(line1)}</text>
+    ${renderCashLine(line1, 187.5, 142, line1Size)}
     <text x="187.5" y="218" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="${line2Size}" font-weight="400" fill="#191919">${escapeXml(line2)}</text>
-    ${textBlock(bottomLines, 187.5, bottomLines.length > 1 ? 318 : 333, {
-      size: 22,
-      color: "#191919",
-      lineHeight: 30,
-    })}
+    ${renderCouponFooter(bottomLines)}
   `, options);
 }
 
@@ -290,18 +304,14 @@ function renderDiscountTemplate(options = {}) {
   const line1 = visibleLine(0);
   const line2 = visibleLine(1);
   const line3 = state.lines[2];
-  const line1Size = fitSingleLineFontSize(line1, 100, 235, 58);
-  const line2Size = fitSingleLineFontSize(line2, 40, 249, 10);
+  const line1Size = fitSingleLineFontSize(line1, 97.5, 336, 10);
+  const line2Size = fitSingleLineFontSize(line2, 41.25, 336, 10);
   const bottomLines = splitLines(line3 || templates.discount.defaults[2]);
 
   return couponShell(`
     ${renderDiscountLine(line1, 187.5, 142, line1Size)}
     <text x="187.5" y="218" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="${line2Size}" font-weight="400" fill="#191919">${escapeXml(line2)}</text>
-    ${textBlock(bottomLines, 187.5, bottomLines.length > 1 ? 318 : 333, {
-      size: 22,
-      color: "#191919",
-      lineHeight: 30,
-    })}
+    ${renderCouponFooter(bottomLines)}
   `, options);
 }
 
@@ -309,18 +319,14 @@ function renderTicketTemplate(options = {}) {
   const line1 = visibleLine(0);
   const line2 = visibleLine(1);
   const line3 = state.lines[2];
-  const line1Size = fitSingleLineFontSize(line1, 100, 235, 58);
-  const line2Size = fitSingleLineFontSize(line2, 40, 249, 10);
+  const line1Size = fitSingleLineFontSize(line1, 97.5, 336, 10);
+  const line2Size = fitSingleLineFontSize(line2, 41.25, 336, 10);
   const bottomLines = splitLines(line3 || templates.ticket.defaults[2]);
 
   return couponShell(`
-    <text x="187.5" y="142" text-anchor="middle" font-family="MotoyaCedarW6, PingFang SC, sans-serif" font-size="${line1Size}" font-weight="900" fill="#191919">${escapeXml(line1)}</text>
+    ${renderCashLine(line1, 187.5, 142, line1Size)}
     <text x="187.5" y="218" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="${line2Size}" font-weight="400" fill="#191919">${escapeXml(line2)}</text>
-    ${textBlock(bottomLines, 187.5, bottomLines.length > 1 ? 318 : 333, {
-      size: 22,
-      color: "#191919",
-      lineHeight: 30,
-    })}
+    ${renderCouponFooter(bottomLines)}
   `, options);
 }
 
@@ -328,18 +334,14 @@ function renderBoxTemplate(options = {}) {
   const line1 = visibleLine(0);
   const line2 = visibleLine(1);
   const line3 = state.lines[2];
-  const line1Size = fitFontSize(line1, 72, 4);
-  const line2Size = fitSingleLineFontSize(line2, 72, 249, 10);
+  const line1Size = fitSingleLineFontSize(line1, 67.5, 336, 10);
+  const line2Size = fitSingleLineFontSize(line2, 67.5, 336, 10);
   const bottomLines = splitLines(line3 || templates.box.defaults[2]);
 
   return couponShell(`
-    <text x="187.5" y="130" text-anchor="middle" font-family="HYFengShangHei85J, sans-serif" font-size="${line1Size}" font-weight="900" fill="#191919">${escapeXml(line1)}</text>
-    <text x="187.5" y="210" text-anchor="middle" font-family="HYFengShangHei85J, sans-serif" font-size="${line2Size}" font-weight="900" fill="#191919">${escapeXml(line2)}</text>
-    ${textBlock(bottomLines, 187.5, bottomLines.length > 1 ? 318 : 333, {
-      size: 22,
-      color: "#191919",
-      lineHeight: 30,
-    })}
+    <text x="187.5" y="130" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="${line1Size}" font-weight="600" fill="#191919">${escapeXml(line1)}</text>
+    <text x="187.5" y="210" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="${line2Size}" font-weight="600" fill="#191919">${escapeXml(line2)}</text>
+    ${renderCouponFooter(bottomLines)}
   `, options);
 }
 
@@ -435,22 +437,55 @@ ${fontFaceCss(options.fonts)}
     </svg>`;
 }
 
+function renderDrawCouponTemplate(options = {}) {
+  const base = window.DRAW_COUPON_DATA || "./assets/draw-coupon-base.png";
+  const percent = window.DRAW_COUPON_PERCENT_DATA || "./assets/draw-coupon-percent.svg";
+  const amount = state.drawAmount === "custom" ? state.drawCustomAmount.trim() : state.drawAmount;
+  const amountSize = amount && amount !== "none" ? 86.81 : 0;
+  const currencySize = amountSize * 0.6;
+  const amountMarkup = amount && amount !== "none"
+    ? `<text x="158" y="211" text-anchor="middle" font-weight="900" fill="#ffffff" transform="rotate(-6 158 185)" style="filter: drop-shadow(0 5px 3px rgba(217,36,0,.6))"><tspan font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="${currencySize}">¥</tspan><tspan font-family="MotoyaCedarW6, sans-serif" font-size="${amountSize}">${escapeXml(amount)}</tspan></text>`
+    : `<image href="${percent}" x="111" y="149" width="98.787" height="84.438" transform="rotate(-6 160.394 191.219)" preserveAspectRatio="xMidYMid meet" />`;
+  const restrictedMarkup = state.drawRestricted
+    ? `<rect x="0" y="281.25" width="375" height="93.75" fill="#ffeeeb" />
+       <text x="187.5" y="346" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="57.292" font-weight="400" fill="#ff0040">限非新品</text>`
+    : "";
+
+  return `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 375" role="img" aria-label="抽卡券预览">
+      <style>${fontFaceCss(options.fonts)}</style>
+      <image href="${base}" x="0" y="0" width="375" height="375" preserveAspectRatio="none" />
+      ${amountMarkup}
+      ${restrictedMarkup}
+    </svg>`;
+}
+
 function buildSvg(options = {}) {
   if (state.template === "cash") return renderCashTemplate(options);
   if (state.template === "discount") return renderDiscountTemplate(options);
   if (state.template === "ticket") return renderTicketTemplate(options);
   if (state.template === "product") return renderProductTemplate(options);
   if (state.template === "newcomer") return renderNewcomerTemplate(options);
+  if (state.template === "draw") return renderDrawCouponTemplate(options);
   return renderBoxTemplate(options);
 }
 
 function render() {
   const isProduct = state.template === "product";
+  const isDraw = state.template === "draw";
+  const supportsThirdLineToggle = ["cash", "discount", "ticket", "box"].includes(state.template);
   els.templateTitle.textContent = templates[state.template].title;
   els.couponPreview.innerHTML = buildSvg({ fonts: state.embeddedFonts || window.COUPON_FONT_DATA });
-  els.textPanel.hidden = isProduct;
+  els.textPanel.hidden = isProduct || isDraw;
   els.productPanel.hidden = !isProduct;
+  els.drawPanel.hidden = !isDraw;
   els.productTagPicker.hidden = !isProduct;
+  els.thirdLineToggleRow.hidden = !supportsThirdLineToggle;
+  els.thirdLineField.hidden = supportsThirdLineToggle && !state.showThirdLine;
+  els.showThirdLine.checked = state.showThirdLine;
+  els.drawCustomAmountField.hidden = state.drawAmount !== "custom";
+  els.drawCustomAmount.value = state.drawCustomAmount;
+  els.drawRestricted.checked = state.drawRestricted;
   els.downloadPng.disabled = isProduct && !state.productImageDataUrl;
 
   els.templateButtons.forEach((button) => {
@@ -459,6 +494,9 @@ function render() {
 
   els.productTagButtons.forEach((button) => {
     button.classList.toggle("active", button.dataset.productTag === state.productTag);
+  });
+  els.drawAmountButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.drawAmount === state.drawAmount);
   });
 }
 
@@ -491,6 +529,10 @@ function safeFilenamePart(value) {
 }
 
 function downloadFilename() {
+  if (state.template === "draw") {
+    const amount = state.drawAmount === "custom" ? state.drawCustomAmount.trim() : state.drawAmount;
+    return `抽卡券-${amount === "none" || !amount ? "无金额" : `${safeFilenamePart(amount)}元`}${state.drawRestricted ? "-限非新品" : ""}.png`;
+  }
   if (state.template === "product") {
     const name = safeFilenamePart(state.productImageName.replace(/\.[^.]+$/i, ""));
     const tag = safeFilenamePart(productTags[state.productTag]?.label || "商品券");
@@ -612,6 +654,28 @@ els.productTagButtons.forEach((button) => {
     state.productTag = button.dataset.productTag;
     render();
   });
+});
+
+els.drawAmountButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    state.drawAmount = button.dataset.drawAmount;
+    render();
+  });
+});
+
+els.drawCustomAmount.addEventListener("input", () => {
+  state.drawCustomAmount = els.drawCustomAmount.value;
+  render();
+});
+
+els.drawRestricted.addEventListener("change", () => {
+  state.drawRestricted = els.drawRestricted.checked;
+  render();
+});
+
+els.showThirdLine.addEventListener("change", () => {
+  state.showThirdLine = els.showThirdLine.checked;
+  render();
 });
 
 els.productImageInput.addEventListener("change", (event) => {

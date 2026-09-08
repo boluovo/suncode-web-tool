@@ -189,10 +189,46 @@ h2 {
   background: #ffce00;
 }
 
+.draw-amount-picker {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.draw-amount-picker .tag-option {
+  padding: 0 5px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
 .field {
   display: grid;
   gap: 7px;
   margin-top: 12px;
+}
+
+.field[hidden] {
+  display: none;
+}
+
+.coupon-third-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-weight: 700;
+}
+
+.coupon-third-toggle input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #ffce00;
+}
+
+.coupon-third-toggle[hidden] {
+  display: none;
 }
 
 .field:first-of-type {
