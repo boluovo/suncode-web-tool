@@ -38,6 +38,12 @@ const productTags = {
   box: {
     label: "端盒券",
     src: "./assets/product-tags/box.png",
+    mime: "image/png",
+  },
+  random: {
+    label: "随机一款",
+    src: "./assets/product-tags/random.svg",
+    mime: "image/svg+xml",
   },
 };
 
@@ -48,7 +54,7 @@ const state = {
   productImageDataUrl: "",
   productImageName: "",
   productTag: "exchange",
-  productTagDataUrls: null,
+  productTagDataUrls: window.COUPON_PRODUCT_TAG_DATA || null,
 };
 
 const els = {
@@ -340,16 +346,29 @@ function renderBoxTemplate(options = {}) {
 function renderProductTag() {
   const tag = productTags[state.productTag] || productTags.exchange;
   const href = state.productTagDataUrls?.[state.productTag] || tag.src;
+  const isRandom = state.productTag === "random";
+  const randomLabel = isRandom
+    ? `<text x="317.75" y="162" text-anchor="middle" font-family="HYFengShangHei85J, sans-serif" font-size="48" font-weight="900" fill="#191919" transform="rotate(-4.74 317.75 222.5)">
+        <tspan x="317.75" dy="0">随</tspan>
+        <tspan x="317.75" dy="50">机</tspan>
+        <tspan x="317.75" dy="50">一</tspan>
+        <tspan x="317.75" dy="50">款</tspan>
+      </text>`
+    : "";
 
   return `
-    <image href="${href}" x="253" y="21" width="117.5" height="263.5" preserveAspectRatio="xMidYMid meet" />`;
+    <image href="${href}" x="${isRandom ? 253.31 : 253}" y="${isRandom ? 37 : 21}" width="${isRandom ? 122.657 : 117.5}" height="${isRandom ? 301.104 : 263.5}" preserveAspectRatio="xMidYMid meet" />
+    ${randomLabel}`;
 }
 
 function renderProductTemplate(options = {}) {
+  const imageX = 7.5;
+  const imageY = 7.5;
+  const imageSize = 360;
   const imageMarkup = state.productImageDataUrl
-    ? `<image href="${state.productImageDataUrl}" x="7.5" y="7.5" width="360" height="360" preserveAspectRatio="xMidYMid meet" />`
+    ? `<image href="${state.productImageDataUrl}" x="${imageX}" y="${imageY}" width="${imageSize}" height="${imageSize}" preserveAspectRatio="xMidYMid meet" />`
     : `<g>
-        <rect x="7.5" y="7.5" width="360" height="360" rx="10" fill="none" stroke="#cfd8df" stroke-dasharray="8 8" />
+        <rect x="${imageX}" y="${imageY}" width="${imageSize}" height="${imageSize}" rx="10" fill="none" stroke="#cfd8df" stroke-dasharray="8 8" />
         <text x="187.5" y="187.5" text-anchor="middle" dominant-baseline="middle" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="18" fill="#7b8790">商品图预览</text>
       </g>`;
 
@@ -527,10 +546,14 @@ async function loadProductTagDataUrls() {
 
   const entries = await Promise.all(
     Object.entries(productTags).map(async ([key, tag]) => {
-      const response = await fetch(tag.src);
-      if (!response.ok) throw new Error("商品券标签素材读取失败");
-      const dataUrl = `data:image/png;base64,${arrayBufferToBase64(await response.arrayBuffer())}`;
-      return [key, dataUrl];
+      try {
+        const response = await fetch(tag.src);
+        if (!response.ok) throw new Error("商品券标签素材读取失败");
+        const dataUrl = `data:${tag.mime || "image/png"};base64,${arrayBufferToBase64(await response.arrayBuffer())}`;
+        return [key, dataUrl];
+      } catch (error) {
+        throw new Error("商品券标签素材读取失败");
+      }
     }),
   );
 

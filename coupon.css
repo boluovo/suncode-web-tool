@@ -283,6 +283,7 @@ h2 {
 .toolbar-tag-picker {
   grid-column: 1 / -1;
   grid-row: 2;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   width: min(470px, 52vw);
   margin: 0;
 }

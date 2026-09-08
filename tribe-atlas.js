@@ -5,7 +5,7 @@
   const WIDTH = 138;
   const HEIGHT = 38;
   const MAX_FONT_SIZE = 22;
-  const MAX_TEXT_WIDTH = 70;
+  const MAX_TEXT_WIDTH = 116;
   const state = { style: "silver", text: "方寸卡" };
   const backgroundImage = new Image();
 
@@ -22,13 +22,11 @@
   }
 
   function fittedFontSize(context, text) {
-    let size = MAX_FONT_SIZE;
-    while (size > 8) {
-      context.font = `800 ${size}px FZHanSongTiJF, serif`;
-      if (context.measureText(text).width <= MAX_TEXT_WIDTH) break;
-      size -= 0.25;
-    }
-    return size;
+    context.font = `800 ${MAX_FONT_SIZE}px FZHanSongTiJF, serif`;
+    const measuredWidth = context.measureText(text).width;
+    if (measuredWidth <= MAX_TEXT_WIDTH) return MAX_FONT_SIZE;
+
+    return Math.max(1, (MAX_FONT_SIZE * MAX_TEXT_WIDTH) / measuredWidth);
   }
 
   function draw(target, scale = 1) {
