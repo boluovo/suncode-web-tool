@@ -279,7 +279,7 @@ function renderCouponFooter(bottomLines) {
 
   return textBlock(bottomLines, 187.5, bottomLines.length > 1 ? 314 : 329, {
     size: 30,
-    color: "#666666",
+    color: "#4d2600",
     weight: 300,
     lineHeight: 39,
   });
