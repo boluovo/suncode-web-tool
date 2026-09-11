@@ -454,6 +454,7 @@ function renderDrawCouponTemplate(options = {}) {
   return `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 375" role="img" aria-label="抽卡券预览">
       <style>${fontFaceCss(options.fonts)}</style>
+      <rect x="0" y="0" width="375" height="375" fill="#fff4f2" />
       <image href="${base}" x="0" y="0" width="375" height="375" preserveAspectRatio="none" />
       ${amountMarkup}
       ${restrictedMarkup}
