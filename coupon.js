@@ -353,7 +353,7 @@ function renderProductTag() {
     ? `<text x="317.75" y="162" text-anchor="middle" font-family="HYFengShangHei85J, sans-serif" font-size="48" font-weight="900" fill="#191919" transform="rotate(-4.74 317.75 222.5)">
         <tspan x="317.75" dy="0">随</tspan>
         <tspan x="317.75" dy="50">机</tspan>
-        <tspan x="317.75" dy="50">一</tspan>
+        <tspan x="317.75" dy="50">1</tspan>
         <tspan x="317.75" dy="50">款</tspan>
       </text>`
     : "";
