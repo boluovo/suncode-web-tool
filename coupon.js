@@ -45,7 +45,7 @@ const productTags = {
     mime: "image/png",
   },
   random: {
-    label: "随机一款",
+    label: "随机1款",
     src: "./assets/product-tags/random.svg",
     mime: "image/svg+xml",
   },
